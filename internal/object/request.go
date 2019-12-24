@@ -21,9 +21,18 @@ type RequestObjectField struct {
 	Validators   []validators.Validator // 数据验证
 }
 
-func GenerateRequestObjectField(name string, fieldName string, info *reflects.TypeInfo, require bool) *RequestObjectField {
+func GenerateRequestObjectField(tag *reflects.ChainTag, fieldName string, info *reflects.TypeInfo, require bool) *RequestObjectField {
+	var vlds []validators.Validator
+	if tag != nil && info.IsPrimitive {
+		vlds = validators.GenerateValidators(info.Reference, tag)
+	}
+
+	jsonName := ""
+	if tag != nil {
+		jsonName = tag.FieldName
+	}
 	field := &RequestObjectField{
-		Name:      name,
+		Name:      jsonName,
 		FieldName: fieldName,
 		Type:      info.Reference,
 		Ptr:       info.IsRawPtr,
@@ -32,7 +41,7 @@ func GenerateRequestObjectField(name string, fieldName string, info *reflects.Ty
 		//SliceType:    info.,
 		SliceItemPtr: info.IsSliceItemIsPtr,
 		Require:      require,
-		Validators:   nil,
+		Validators:   vlds,
 	}
 
 	if field.Slice {

@@ -123,7 +123,7 @@ func checkInArguments(svc *Service,
 					return inInfo, nil, fmt.Errorf("Service function invalid type: %s -> %s", err, svc.location)
 				}
 
-				inObjField = object.GenerateRequestObjectField("", "", typeInfo, false)
+				inObjField = object.GenerateRequestObjectField(nil, "", typeInfo, false)
 				//inObjField = &object.RequestObjectField{
 				//	Name:         "",
 				//	Type:         typeInfo.Reference,

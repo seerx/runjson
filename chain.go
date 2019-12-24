@@ -74,22 +74,27 @@ func (c *Chain) Execute(ctx *context.Context, data string) (Responses, error) {
 	rsp := map[string]*Response{}
 
 	for _, request := range reqs {
+		resKey := request.Alias
+		if resKey == "" {
+			resKey = request.Service
+		}
 		c.log.Debug("Call: %s", request.Service)
 		svc := c.service.GetService(request.Service)
 		if svc != nil {
 			res, err := svc.Run(ctx, request.Args)
+
 			if err != nil {
-				rsp[request.Service] = &Response{
+				rsp[resKey] = &Response{
 					Error: err.Error(),
 				}
 			} else {
-				rsp[request.Service] = &Response{
+				rsp[resKey] = &Response{
 					Error: "",
 					Data:  res,
 				}
 			}
 		} else {
-			rsp[request.Service] = &Response{
+			rsp[resKey] = &Response{
 				Error: "No Service Named " + request.Service,
 			}
 		}

@@ -115,7 +115,7 @@ func traversal(loc *reflects.Location,
 			obj.Children = append(obj.Children, itemObj)
 
 			if requestMgr != nil {
-				reqField := object.GenerateRequestObjectField(fdTag.FieldName, fd.Name, &fdInfo.TypeInfo, fdTag.Require)
+				reqField := object.GenerateRequestObjectField(fdTag, fd.Name, &fdInfo.TypeInfo, fdTag.Require)
 				//reqField := &object.RequestObjectField{
 				//	Name:         fdTag.FieldName,
 				//	Type:         fdInfo.Reference,

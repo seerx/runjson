@@ -48,7 +48,7 @@ type ReqID struct {
 }
 
 type Req struct {
-	A    string   `json:"a" c:"desc:测试A"`
+	A    string   `json:"a,omitempty" c:"desc:测试A,require,limit:10<$v"`
 	B    *string  `json:"b" c:"desc:测试B ptr"`
 	Req  ReqID    `json:"req" c:"desc:测试结构"`
 	Reqs []*ReqID `json:"reqs" c:"desc:啊哈"`
@@ -87,6 +87,10 @@ func main() {
 	reqs := chain.Requests{}
 	reqs = append(reqs, &chain.Request{
 		Service: "test.Test1",
+		Args:    req,
+	}, &chain.Request{
+		Service: "test.Test1",
+		Alias:   "ABC",
 		Args:    req,
 	})
 

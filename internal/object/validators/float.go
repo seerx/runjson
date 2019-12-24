@@ -3,6 +3,7 @@ package validators
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -109,7 +110,17 @@ func (v *FloatLimit) generateError(n float64) error {
 }
 
 func (v *FloatLimit) Check(val interface{}) error {
-	n, ok := val.(float64)
+	var n float64
+	var ok bool
+	if reflect.TypeOf(val).Kind() == reflect.Ptr {
+		var tmp *float64
+		tmp, ok = val.(*float64)
+		if ok {
+			n = *tmp
+		}
+	} else {
+		n, ok = val.(float64)
+	}
 	if !ok {
 		return typeError("float64")
 	}

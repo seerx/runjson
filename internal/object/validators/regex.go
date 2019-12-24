@@ -3,6 +3,7 @@ package validators
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"regexp"
 )
 
@@ -16,7 +17,18 @@ type RegexpValidator struct {
 }
 
 func (v *RegexpValidator) Check(val interface{}) error {
-	str, ok := val.(string)
+	var str string
+	var ok bool
+	if reflect.TypeOf(val).Kind() == reflect.Ptr {
+		var s *string
+		s, ok = val.(*string)
+		if ok {
+			str = *s
+		}
+	} else {
+		str, ok = val.(string)
+	}
+
 	if !ok {
 		return typeError("string")
 	}

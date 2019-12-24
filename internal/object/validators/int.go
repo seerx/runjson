@@ -3,6 +3,7 @@ package validators
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strconv"
 	"strings"
 )
@@ -109,7 +110,18 @@ func (v *IntegerLimit) generateError(n int) error {
 }
 
 func (v *IntegerLimit) Check(val interface{}) error {
-	n, ok := val.(int)
+	var n int
+	var ok bool
+	if reflect.TypeOf(val).Kind() == reflect.Ptr {
+		var tmp *int
+		tmp, ok = val.(*int)
+		if ok {
+			n = *tmp
+		}
+	} else {
+		n, ok = val.(int)
+	}
+
 	if !ok {
 		return typeError("int")
 	}
