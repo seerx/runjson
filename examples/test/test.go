@@ -58,6 +58,15 @@ func (a *ApiTest) Test1(aa *Req) ([]*Response, error) {
 	return []*Response{&Response{Val: "123"}}, nil
 }
 
+func (a ApiTest) Test2(abb string) (*Response, error) {
+	return &Response{
+		Val:   "123",
+		Key:   abb,
+		Items: nil,
+		UAry:  nil,
+	}, nil
+}
+
 func InjectFn(a map[string]interface{}) (io.Closer, error) {
 	return nil, nil
 }
@@ -77,29 +86,32 @@ func main() {
 
 	B := "aaaaaaa"
 
-	req := &Req{
-		A:    "123",
-		B:    &B,
-		Req:  ReqID{ID: 100},
-		Reqs: []*ReqID{{ID: 11}, {ID: 12}},
-	}
+	//req := &Req{
+	//	A:    "123",
+	//	B:    &B,
+	//	Req:  ReqID{ID: 100},
+	//	Reqs: []*ReqID{{ID: 11}, {ID: 12}},
+	//}
 
 	reqs := chain.Requests{}
 	reqs = append(reqs, &chain.Request{
-		Service: "test.Test1",
-		Args:    req,
-	}, &chain.Request{
-		Service: "test.Test1",
+		Service: "test.Test2",
 		Alias:   "ABC",
-		Args:    req,
+		Args:    B,
 	})
+	//reqs = append(reqs, &chain.Request{
+	//	Service: "test.Test1",
+	//	Args:    req,
+	//})
 
 	data, _ := json.Marshal(reqs)
 	str := string(data)
+
 	rsp, err := ch.Execute(&context.Context{}, str)
 	if err != nil {
 		panic(err)
 	}
+
 	data, _ = json.Marshal(rsp)
 	str = string(data)
 	fmt.Println(str)

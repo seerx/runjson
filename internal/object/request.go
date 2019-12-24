@@ -107,25 +107,32 @@ func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, 
 		return slice, nil
 	}
 	// 非切片类型
+	var reportError error
 	val, err := objType.NewInstance(parentPath, rof.Name, data, mgr)
 	if err != nil {
-		return reflect.ValueOf(nil), err
-	}
-
-	// 验证数据合法性
-	for _, vld := range rof.Validators {
-		if err := vld.Check(val.Interface()); err != nil {
-			// 数据校验不通过
-			return reflect.ValueOf(nil), err
+		if rof.Require {
+			reportError = err
+			//return val, err
+		}
+		//else {
+		//	//return val, nil
+		//}
+	} else {
+		// 验证数据合法性
+		for _, vld := range rof.Validators {
+			if err := vld.Check(val.Interface()); err != nil {
+				// 数据校验不通过
+				return reflect.ValueOf(nil), err
+			}
 		}
 	}
 
 	if rof.Ptr {
 		// 指针
-		return val, nil
+		return val, reportError
 	} else {
 		// 非指针
-		return val.Elem(), nil
+		return val.Elem(), reportError
 	}
 	//return nil, nil
 }
@@ -138,8 +145,8 @@ func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data i
 	if ro.Primitive {
 		// 原生类型
 		// 对 data 做类型判断及数据转换
-		outData := tryToConvert(ro.Type, data)
-		return outData, nil
+		return tryToConvert(ro.Type, data)
+		//return outData, nil
 	}
 
 	//if ro.Struct {
@@ -148,7 +155,7 @@ func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data i
 
 	mp, ok := data.(map[string]interface{})
 	if !ok {
-		panic(fmt.Errorf("Cann't parse %s as struct", ro.TypeName))
+		return reflect.ValueOf(nil), fmt.Errorf("Cann't parse %s as struct", ro.TypeName)
 	}
 	inst := reflect.New(ro.Type)
 	elem := inst.Elem()

@@ -124,21 +124,33 @@ func checkInArguments(svc *Service,
 				}
 
 				inObjField = object.GenerateRequestObjectField(nil, "", typeInfo, false)
-				//inObjField = &object.RequestObjectField{
-				//	Name:         "",
-				//	Type:         typeInfo.Reference,
-				//	Ptr:          typeInfo.IsRawPtr,
-				//	Slice:        typeInfo.IsRawSlice,
-				//	SliceItemPtr: typeInfo.IsSliceItemIsPtr,
-				//}
 
 				svc.inputArgs[n] = &arguments.ArgRequest{
-					Arg: inObj,
+					Arg:      inObj,
+					ArgField: inObjField,
 				}
-				//svc.
 			}
 			continue
 		}
+		if typeInfo.IsPrimitive {
+			// 原生类型，必须是输入参数
+			if svc.requestObject != nil {
+				// 已经有输入参数了
+				return nil, nil, fmt.Errorf("A service only has one request argument %s: %s", typeInfo.Name, svc.location)
+			}
+			var err error
+			if inInfo, inObj, err = traversal(svc.location, typeInfo.Raw, referenceMap, objMap, requestObjectManager); err != nil {
+				return inInfo, nil, fmt.Errorf("Service function invalid type: %s -> %s", err, svc.location)
+			}
+			inObjField = object.GenerateRequestObjectField(nil, "", typeInfo, false)
+			svc.inputArgs[n] = &arguments.ArgRequest{
+				Arg:      inObj,
+				ArgField: inObjField,
+			}
+			//svc.requestObject = inObjField
+			continue
+		}
+		return inInfo, nil, fmt.Errorf("Invalid service function : %s", svc.location)
 	}
 
 	return inInfo, inObjField, nil

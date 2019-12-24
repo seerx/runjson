@@ -15,8 +15,6 @@ type LoaderStruct struct {
 
 func (ls *LoaderStruct) CreateValue(ctx *ArgumentContext) reflect.Value {
 	return reflect.New(ls.Type)
-	//return reflect.ValueOf(ls.New())
-	//panic("implement me")
 }
 
 func (ls *LoaderStruct) IsInjectInterface() bool {

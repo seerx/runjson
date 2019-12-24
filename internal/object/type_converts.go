@@ -1,43 +1,60 @@
 package object
 
-import "reflect"
+import (
+	"fmt"
+	"reflect"
+)
 
 // typ 使用 Refernce
-func tryToConvert(typ reflect.Type, val interface{}) reflect.Value {
-	vType := reflect.TypeOf(val)
+func tryToConvert(typ reflect.Type, val interface{}) (reflect.Value, error) {
+	//vType := reflect.TypeOf(val)
 	//if vType.Kind() == reflect.Ptr {
 	//	vType = vType.Elem()
 	//}
 
-	if vType.ConvertibleTo(typ) {
+	var nilVal reflect.Value
 
-		//return reflect.ValueOf(val).Convert(typ)
-		var (
-			Int   int
-			Float float64
-		)
-		switch vType.Kind() {
-		case reflect.Int:
-			Int = val.(int)
+	//if vType.ConvertibleTo(typ) {
+	//var (
+	//	Int   int
+	//	Float float64
+	//)
+	switch typ.Kind() {
+	case reflect.Int:
+		nilVal = reflect.ValueOf(new(int))
+		Int, ok := val.(int)
+		if ok {
 			if res := int2Type(typ, Int); !res.IsNil() {
-				return res
+				return res, nil
 			}
-		case reflect.Float64, reflect.Float32:
-			Float = val.(float64)
-			//return reflect.ValueOf(val).Convert(typ)
+		}
+	case reflect.Float64, reflect.Float32:
+		nilVal = reflect.ValueOf(new(float64))
+		Float, ok := val.(float64)
+		//return reflect.ValueOf(val).Convert(typ)
+		if ok {
 			if res := float2Type(typ, Float); !res.IsNil() {
-				return res
+				return res, nil
 			}
-		case reflect.String:
-			str := val.(string)
-			return reflect.ValueOf(&str)
-		case reflect.Bool:
-			b := val.(bool)
-			return reflect.ValueOf(&b)
+		}
+	case reflect.String:
+		nilVal = reflect.ValueOf(new(string))
+		str, ok := val.(string)
+		if ok {
+			return reflect.ValueOf(&str), nil
+		}
+	case reflect.Bool:
+		nilVal = reflect.ValueOf(new(bool))
+		b, ok := val.(bool)
+		if ok {
+			return reflect.ValueOf(&b), nil
 		}
 	}
+	//}
+	// 数据类型不匹配
+	return nilVal, fmt.Errorf("Invalid data type")
 	// string bool 直接返回
-	return reflect.ValueOf(val).Convert(typ)
+	//return reflect.ValueOf(val).Convert(typ)
 }
 
 func float2Type(typ reflect.Type, val float64) reflect.Value {
