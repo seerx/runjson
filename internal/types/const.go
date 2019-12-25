@@ -9,11 +9,19 @@ import (
 var (
 	errorType       = reflect.TypeOf((*error)(nil)).Elem()
 	requireType     = reflect.TypeOf((*intf.Require)(nil)).Elem()
+	funcInfoType    = reflect.TypeOf((*intf.FuncInfo)(nil)).Elem()
 	injectParamType = reflect.TypeOf((*map[string]interface{})(nil)).Elem()
 )
 
 func IsInjectParam(typ reflect.Type) bool {
 	return injectParamType == typ
+}
+
+func IsFuncInfo(typ reflect.Type) (bool, bool) {
+	if typ.Kind() == reflect.Ptr {
+		return typ.Elem() == funcInfoType, true
+	}
+	return typ == funcInfoType, false
 }
 
 func IsRequirement(typ reflect.Type) bool {

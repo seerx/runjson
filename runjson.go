@@ -24,7 +24,7 @@ import (
 // Runner 结构体
 type Runner struct {
 	// 用于对外接口文档
-	ApiMap *graph.MapInfo
+	ApiInfo *graph.ApiInfo
 	// 用于执行服务
 	service *runner.Runners
 	// 日志
@@ -45,7 +45,7 @@ func New() *Runner {
 		Formatter: &logrus.TextFormatter{},
 	}
 	return &Runner{
-		ApiMap: &graph.MapInfo{
+		ApiInfo: &graph.ApiInfo{
 			Groups:   nil,
 			Request:  map[string]*graph.ObjectInfo{},
 			Response: map[string]*graph.ObjectInfo{},
@@ -120,7 +120,7 @@ func (c *Runner) Execute(ctx *context.Context, data string) (Responses, error) {
 // Explain 解释定义
 func (c *Runner) Explain() error {
 	// 用于接口的 API 文档信息
-	amap := c.ApiMap
+	amap := c.ApiInfo
 
 	for _, loader := range c.loaders {
 		grpInfo := loader.Group()
@@ -170,7 +170,19 @@ func (c *Runner) Explain() error {
 				// 解析完成
 				// 填写服务名称
 				svc.Name = svcName
+
+				svcInfo := &graph.ServiceInfo{
+					Name:           svcName,
+					InputObjectID:  svc.RequestObjectID,
+					OutputObjectID: svc.ReturnObjectID,
+				}
 				// 解析服务描述信息
+				info := runner.TryToParseFuncInfo(loader, loaderTyp, method.Name)
+				if info != nil {
+					svcInfo.Description = info.Descrition
+					svcInfo.Deprecated = info.Deprecated
+				}
+				grp.AddService(svcInfo)
 				//grp. = append(grp.Funcs, fn)
 				c.service.Add(svc)
 			}

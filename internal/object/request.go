@@ -54,6 +54,7 @@ func GenerateRequestObjectField(tag *reflects.ChainTag, fieldName string, info *
 }
 
 type RequestObject struct {
+	//ID       string
 	TypeName string       // 类型名称
 	Type     reflect.Type // 实际数据类型
 

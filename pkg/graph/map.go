@@ -2,15 +2,15 @@ package graph
 
 import "github.com/seerx/runjson/pkg/intf"
 
-// MapInfo 总体结构
-type MapInfo struct {
+// ApiInfo 总体结构
+type ApiInfo struct {
 	Groups   []*GroupInfo           `json:"groups"`
 	Response map[string]*ObjectInfo `json:"response"`
 	Request  map[string]*ObjectInfo `json:"request"`
 }
 
 // GetGroup 根据 intf.Group 获取 map 中的组信息
-func (mi *MapInfo) GetGroup(grp *intf.Group) *GroupInfo {
+func (mi *ApiInfo) GetGroup(grp *intf.Group) *GroupInfo {
 	for _, group := range mi.Groups {
 		if group.Name == grp.Name {
 			// 组已经存在

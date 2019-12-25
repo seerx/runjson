@@ -58,6 +58,7 @@ func Traversal(loc *reflects.Location,
 	if requestMgr != nil {
 		// 生成 RequestObject 顶级对象
 		requestObj = &object.RequestObject{
+			//ID:        tp.ID(),
 			TypeName:  tp.Name,
 			Type:      tp.Reference,
 			Primitive: tp.IsPrimitive,

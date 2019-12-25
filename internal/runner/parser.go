@@ -6,9 +6,9 @@ import (
 
 	"github.com/seerx/runjson/internal/runner/arguments/loader"
 
-	arguments2 "github.com/seerx/runjson/internal/runner/arguments"
-	inject2 "github.com/seerx/runjson/internal/runner/inject"
-	objtraver2 "github.com/seerx/runjson/internal/runner/objtraver"
+	"github.com/seerx/runjson/internal/runner/arguments"
+	"github.com/seerx/runjson/internal/runner/inject"
+	objtraver "github.com/seerx/runjson/internal/runner/objtraver"
 
 	"github.com/seerx/runjson/pkg/graph"
 
@@ -20,10 +20,10 @@ import (
 
 // TryParserAsService 尝试解析函数为服务
 func TryParserAsService(loader reflect.Type,
-	injectManager *inject2.InjectorManager,
+	injectManager *inject.InjectorManager,
 	requestObjectManager *object.RequestObjectManager,
 	method reflect.Method,
-	info *graph.MapInfo,
+	info *graph.ApiInfo,
 	log logrus.Logger) (*JSONRunner, error) {
 
 	// 生成服务基础信息
@@ -40,26 +40,30 @@ func TryParserAsService(loader reflect.Type,
 
 	rMap := map[string]int{}
 	// 解析输出参数
-	var outObj *graph.ObjectInfo
+	var outInfo *graph.ObjectInfo
 	var err error
-	if outObj, err = checkOutArguments(svc, rMap, info.Response, log); err != nil {
-		objtraver2.DecReferenceCount(rMap, info.Response)
+	if outInfo, err = checkOutArguments(svc, rMap, info.Response, log); err != nil {
+		objtraver.DecReferenceCount(rMap, info.Response)
 		return nil, err
 	}
-	svc.returnObjectID = outObj.ID
+	svc.ReturnObjectID = outInfo.ID
 
 	// 解析输入参数
-	//var inInfo *runnergraph.ObjectInfo
+	var inInfo *graph.ObjectInfo
 	var inReq *object.RequestObjectField
+	//var inObj *object.RequestObject
 	inMap := map[string]int{}
-	_, inReq, err = checkInArguments(svc, requestObjectManager, inMap, info.Request, log)
+	inInfo, inReq, err = checkInArguments(svc, requestObjectManager, inMap, info.Request, log)
 	if err != nil {
-		objtraver2.DecReferenceCount(rMap, info.Response)
-		objtraver2.DecReferenceCount(inMap, info.Request)
+		objtraver.DecReferenceCount(rMap, info.Response)
+		objtraver.DecReferenceCount(inMap, info.Request)
 		return nil, err
 	}
 	if inReq != nil {
 		svc.requestObject = inReq
+	}
+	if inInfo != nil {
+		svc.RequestObjectID = inInfo.ID
 	}
 	return svc, nil
 }
@@ -74,12 +78,12 @@ func checkInArguments(svc *JSONRunner,
 	var inInfo *graph.ObjectInfo
 	var inObj *object.RequestObject
 	var inObjField *object.RequestObjectField
-	svc.inputArgs = make([]arguments2.Argument, ic, ic)
+	svc.inputArgs = make([]arguments.Argument, ic, ic)
 	for n := 0; n < ic; n++ {
 		in := svc.funcType.In(n)
 		if types.IsRequirement(in) {
 			// 用于判断必填字段检查的参数
-			svc.inputArgs[n] = &arguments2.ArgRequire{}
+			svc.inputArgs[n] = &arguments.ArgRequire{}
 			continue
 		}
 
@@ -90,7 +94,7 @@ func checkInArguments(svc *JSONRunner,
 			if injector == nil {
 				return nil, nil, fmt.Errorf("No injector exists with type %s: %s", in.Name(), svc.location)
 			}
-			svc.inputArgs[n] = &arguments2.ArgInjector{
+			svc.inputArgs[n] = &arguments.ArgInjector{
 				Injector:    injector,
 				IsInterface: true,
 				ValueIsPtr:  true, // 接口类型，认为是指针类型
@@ -115,7 +119,7 @@ func checkInArguments(svc *JSONRunner,
 			injector := svc.injectMgr.Find(typeInfo.Reference)
 			if injector != nil {
 				// 在注入类型中找到
-				svc.inputArgs[n] = &arguments2.ArgInjector{
+				svc.inputArgs[n] = &arguments.ArgInjector{
 					Injector:    injector,
 					IsInterface: false,
 					ValueIsPtr:  typeInfo.IsRawPtr,
@@ -128,13 +132,13 @@ func checkInArguments(svc *JSONRunner,
 				}
 
 				var err error
-				if inInfo, inObj, err = objtraver2.Traversal(svc.location, typeInfo.Raw, referenceMap, objMap, requestObjectManager); err != nil {
+				if inInfo, inObj, err = objtraver.Traversal(svc.location, typeInfo.Raw, referenceMap, objMap, requestObjectManager); err != nil {
 					return inInfo, nil, fmt.Errorf("JSONRunner function invalid type: %s -> %s", err, svc.location)
 				}
 
 				inObjField = object.GenerateRequestObjectField(nil, "", typeInfo, false)
 
-				svc.inputArgs[n] = &arguments2.ArgRequest{
+				svc.inputArgs[n] = &arguments.ArgRequest{
 					Arg:      inObj,
 					ArgField: inObjField,
 				}
@@ -148,11 +152,11 @@ func checkInArguments(svc *JSONRunner,
 				return nil, nil, fmt.Errorf("A service only has one request argument %s: %s", typeInfo.Name, svc.location)
 			}
 			var err error
-			if inInfo, inObj, err = objtraver2.Traversal(svc.location, typeInfo.Raw, referenceMap, objMap, requestObjectManager); err != nil {
+			if inInfo, inObj, err = objtraver.Traversal(svc.location, typeInfo.Raw, referenceMap, objMap, requestObjectManager); err != nil {
 				return inInfo, nil, fmt.Errorf("JSONRunner function invalid type: %s -> %s", err, svc.location)
 			}
 			inObjField = object.GenerateRequestObjectField(nil, "", typeInfo, false)
-			svc.inputArgs[n] = &arguments2.ArgRequest{
+			svc.inputArgs[n] = &arguments.ArgRequest{
 				Arg:      inObj,
 				ArgField: inObjField,
 			}
@@ -180,7 +184,7 @@ func checkOutArguments(svc *JSONRunner, referenceMap map[string]int, objMap map[
 	}
 	//rMap := map[string]int{}
 	o = svc.funcType.Out(0)
-	if outObj, _, err := objtraver2.Traversal(svc.location, o, referenceMap, objMap, nil); err != nil {
+	if outObj, _, err := objtraver.Traversal(svc.location, o, referenceMap, objMap, nil); err != nil {
 		return nil, fmt.Errorf("JSONRunner function invalid type: %s -> %s", err, funcLoc)
 	} else {
 		//decReferenceCount(referenceMap, info)

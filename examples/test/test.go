@@ -36,7 +36,7 @@ type U struct {
 	ID   int    `json:"id" c:"desc:ID,require"`
 	Name string `json:"name" c:"desc:名称"`
 
-	US []*U `json:"us" c:"desc:yes"`
+	US []*U `json:"us" c:"desc:yes,deprecated"`
 	Ni N    `json:"ni"`
 }
 
@@ -58,6 +58,10 @@ type Req struct {
 	Reqs []*ReqID `json:"reqs" c:"desc:啊哈"`
 }
 
+func (a *ApiTest) Test1Info() string {
+	return `测试函数 1`
+}
+
 func (a *ApiTest) Test1(aa Req, cls Cls) ([]*Response, error) {
 	fmt.Println(a.R)
 	//c.Close()
@@ -65,6 +69,14 @@ func (a *ApiTest) Test1(aa Req, cls Cls) ([]*Response, error) {
 	a.I1.Close()
 	a.I2.Close()
 	return []*Response{&Response{Val: "123"}}, nil
+}
+
+func (a *ApiTest) Test2Info() intf.FuncInfo {
+	return intf.FuncInfo{
+		Descrition: `测试函数 222`,
+		Deprecated: true,
+	}
+
 }
 
 func (a ApiTest) Test2(abb string) (*Response, error) {
@@ -100,6 +112,12 @@ func main() {
 	}
 	ch.Register(&ApiTest{})
 	err := ch.Explain()
+
+	if info, err := json.MarshalIndent(ch.ApiInfo, "", "\t"); err == nil {
+		data := string(info)
+		fmt.Println(data)
+	}
+
 	if err != nil {
 		panic(err)
 	}
