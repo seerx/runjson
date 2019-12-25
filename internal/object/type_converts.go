@@ -6,7 +6,7 @@ import (
 )
 
 // typ 使用 Refernce
-func tryToConvert(typ reflect.Type, val interface{}) (reflect.Value, error) {
+func tryToConvert(fieldName string, typ reflect.Type, val interface{}) (reflect.Value, error) {
 	//vType := reflect.TypeOf(val)
 	//if vType.Kind() == reflect.Ptr {
 	//	vType = vType.Elem()
@@ -26,6 +26,13 @@ func tryToConvert(typ reflect.Type, val interface{}) (reflect.Value, error) {
 		if ok {
 			if res := int2Type(typ, Int); !res.IsNil() {
 				return res, nil
+			}
+		} else {
+			Float, ok := val.(float64)
+			if ok {
+				if res := float2Type(typ, Float); !res.IsNil() {
+					return res, nil
+				}
 			}
 		}
 	case reflect.Float64, reflect.Float32:
@@ -52,7 +59,7 @@ func tryToConvert(typ reflect.Type, val interface{}) (reflect.Value, error) {
 	}
 	//}
 	// 数据类型不匹配
-	return nilVal, fmt.Errorf("Invalid data type")
+	return nilVal, fmt.Errorf("[%s] Invalid data type, expect %s", fieldName, nilVal.Elem().Type().Name())
 	// string bool 直接返回
 	//return reflect.ValueOf(val).Convert(typ)
 }

@@ -6,11 +6,11 @@ import (
 	"io"
 	"time"
 
-	"github.com/seerx/chain/pkg/context"
+	"github.com/seerx/runjson"
 
-	"github.com/seerx/chain/pkg/intf"
+	"github.com/seerx/runjson/pkg/context"
 
-	"github.com/seerx/chain"
+	"github.com/seerx/runjson/pkg/intf"
 )
 
 type ApiTest struct {
@@ -54,7 +54,8 @@ type Req struct {
 	Reqs []*ReqID `json:"reqs" c:"desc:啊哈"`
 }
 
-func (a *ApiTest) Test1(aa *Req) ([]*Response, error) {
+func (a *ApiTest) Test1(aa *Req, fm *intf.FieldMap) ([]*Response, error) {
+	fmt.Println(fm)
 	return []*Response{&Response{Val: "123"}}, nil
 }
 
@@ -76,7 +77,7 @@ func InjectFn1(a map[string]interface{}) (io.ReadCloser, error) {
 }
 
 func main() {
-	ch := chain.New()
+	ch := runjson.New()
 
 	ch.Register(&ApiTest{})
 	err := ch.Explain()
@@ -86,20 +87,20 @@ func main() {
 
 	B := "aaaaaaa"
 
-	//req := &Req{
-	//	A:    "123",
-	//	B:    &B,
-	//	Req:  ReqID{ID: 100},
-	//	Reqs: []*ReqID{{ID: 11}, {ID: 12}},
-	//}
+	req := &Req{
+		A:    "1230099387747474y44 d",
+		B:    &B,
+		Req:  ReqID{ID: 100},
+		Reqs: []*ReqID{{ID: 11}, {ID: 12}},
+	}
 
-	reqs := chain.Requests{}
-	reqs = append(reqs, &chain.Request{
-		Service: "test.Test2",
+	reqs := runjson.Requests{}
+	reqs = append(reqs, &runjson.Request{
+		Service: "test.Test1",
 		Alias:   "ABC",
-		Args:    B,
+		Args:    req,
 	})
-	//reqs = append(reqs, &chain.Request{
+	//reqs = append(reqs, &runjson.Request{
 	//	Service: "test.Test1",
 	//	Args:    req,
 	//})

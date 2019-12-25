@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/seerx/chain/internal/types"
+	"github.com/seerx/runjson/internal/types"
 
-	"github.com/seerx/chain/internal/reflects"
+	"github.com/seerx/runjson/internal/reflects"
 )
 
 // InjectorManager 注入函数管理

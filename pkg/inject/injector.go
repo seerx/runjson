@@ -3,7 +3,7 @@ package inject
 import (
 	"reflect"
 
-	"github.com/seerx/chain/internal/reflects"
+	"github.com/seerx/runjson/internal/reflects"
 )
 
 // Injector 注入结构

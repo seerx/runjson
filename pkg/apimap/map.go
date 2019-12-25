@@ -1,6 +1,6 @@
 package apimap
 
-import "github.com/seerx/chain/pkg/intf"
+import "github.com/seerx/runjson/pkg/intf"
 
 // MapInfo 总体结构
 type MapInfo struct {

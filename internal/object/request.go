@@ -4,9 +4,11 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/seerx/chain/internal/object/validators"
+	"github.com/seerx/runjson/pkg/intf"
 
-	"github.com/seerx/chain/internal/reflects"
+	"github.com/seerx/runjson/internal/object/validators"
+
+	"github.com/seerx/runjson/internal/reflects"
 )
 
 type RequestObjectField struct {
@@ -63,10 +65,16 @@ type RequestObject struct {
 	//Validators []validators.Validator // 数据有效性检查
 }
 
-func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, mgr *RequestObjectManager) (reflect.Value, error) {
-	if data == nil && rof.Require {
-		// 不能为空
-		return reflect.ValueOf(nil), fmt.Errorf("%s.%s is required", parentPath, rof.Name)
+func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, mgr *RequestObjectManager, fm *intf.FieldMap) (reflect.Value, error) {
+	if data == nil {
+		if rof.Require {
+			// 不能为空
+			return reflect.ValueOf(nil), fmt.Errorf("%s.%s is required", parentPath, rof.Name)
+		} else {
+			// ke可以是空
+			return reflect.ValueOf(nil), nil
+		}
+
 	}
 	objType := mgr.Find(rof.Type)
 	if objType == nil {
@@ -89,8 +97,9 @@ func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, 
 			return reflect.ValueOf(nil), fmt.Errorf("Cann't find %s's object'", rof.Name)
 		}
 		slice := reflect.MakeSlice(rof.SliceType, 0, len(ary))
-		for _, v := range ary {
-			if item, err := itemObj.NewInstance(parentPath, rof.Name, v, mgr); err != nil {
+		for n, v := range ary {
+			fname := fmt.Sprintf("%s[%d]", rof.Name, n)
+			if item, err := itemObj.NewInstance(parentPath, fname, v, mgr, fm); err != nil {
 				return reflect.ValueOf(nil), err
 			} else {
 				if rof.SliceItemPtr {
@@ -108,12 +117,12 @@ func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, 
 	}
 	// 非切片类型
 	var reportError error
-	val, err := objType.NewInstance(parentPath, rof.Name, data, mgr)
+	val, err := objType.NewInstance(parentPath, rof.Name, data, mgr, fm)
 	if err != nil {
-		if rof.Require {
-			reportError = err
-			//return val, err
-		}
+		//if rof.Require {
+		reportError = err
+		//return val, err
+		//}
 		//else {
 		//	//return val, nil
 		//}
@@ -127,17 +136,22 @@ func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, 
 		}
 	}
 
-	if rof.Ptr {
-		// 指针
-		return val, reportError
-	} else {
-		// 非指针
-		return val.Elem(), reportError
-	}
+	return val, reportError
+
+	//if rof.Ptr || val.IsNil() {
+	//	// 指针
+	//	return val, reportError
+	//} else {
+	//	if val.Type().Kind() == reflect.Ptr {
+	//		// 非指针
+	//		return val.Elem(), reportError
+	//	}
+	//	return val, reportError
+	//}
 	//return nil, nil
 }
 
-func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data interface{}, mgr *RequestObjectManager) (reflect.Value, error) {
+func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data interface{}, mgr *RequestObjectManager, fm *intf.FieldMap) (reflect.Value, error) {
 	if data == nil {
 		// 数据是空的
 		return reflect.ValueOf(nil), nil
@@ -145,7 +159,7 @@ func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data i
 	if ro.Primitive {
 		// 原生类型
 		// 对 data 做类型判断及数据转换
-		return tryToConvert(ro.Type, data)
+		return tryToConvert(parentPath+"."+fieldName, ro.Type, data)
 		//return outData, nil
 	}
 
@@ -155,15 +169,15 @@ func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data i
 
 	mp, ok := data.(map[string]interface{})
 	if !ok {
-		return reflect.ValueOf(nil), fmt.Errorf("Cann't parse %s as struct", ro.TypeName)
+		return reflect.ValueOf(nil), fmt.Errorf("[%s.%s] Expect object %s", parentPath, fieldName, ro.TypeName)
 	}
 	inst := reflect.New(ro.Type)
 	elem := inst.Elem()
-	var thisParent string
+	var thisPath string
 	if parentPath == "" {
-		thisParent = fieldName
+		thisPath = fieldName
 	} else {
-		thisParent = parentPath + "." + fieldName
+		thisPath = parentPath + "." + fieldName
 	}
 
 	for _, fd := range ro.Fields {
@@ -172,17 +186,23 @@ func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data i
 		if ok {
 			field := elem.FieldByName(fd.FieldName)
 			//obj := mgr.Find(fd.Type)
-			objVal, err := fd.NewInstance(thisParent, v, mgr)
+			objVal, err := fd.NewInstance(thisPath, v, mgr, fm)
 			//objVal, err := obj.NewInstance(thisParent, fd.Name, v, mgr)
 			if err != nil {
 				return reflect.ValueOf(nil), err
 			}
-			if fd.Ptr {
+			if fd.Ptr || fd.Slice {
 				field.Set(objVal)
 			} else {
-				field.Set(objVal) // .Elem())
+				field.Set(objVal.Elem()) // .Elem())
 			}
-			// TODO 添加到已发现字段，用于 reqiure 函数判断
+			// 添加到已发现字段，用于 reqiure 函数判断
+			//fm.Add(thisPath)
+			if thisPath == "" {
+				fm.Add(fd.Name)
+			} else {
+				fm.Add(fmt.Sprintf("%s.%s", thisPath, fd.Name))
+			}
 		} else {
 			if fd.Require {
 				// 必填字段

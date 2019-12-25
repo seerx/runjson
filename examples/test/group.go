@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/seerx/chain/pkg/intf"
+	"github.com/seerx/runjson/pkg/intf"
 )
 
 var GA = intf.Group{

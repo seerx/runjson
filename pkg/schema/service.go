@@ -4,15 +4,17 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/seerx/chain/internal/object"
+	"github.com/seerx/runjson/pkg/intf"
 
-	"github.com/seerx/chain/pkg/context"
+	"github.com/seerx/runjson/internal/object"
 
-	"github.com/seerx/chain/pkg/inject"
+	"github.com/seerx/runjson/pkg/context"
 
-	"github.com/seerx/chain/pkg/schema/arguments"
+	"github.com/seerx/runjson/pkg/inject"
 
-	"github.com/seerx/chain/internal/reflects"
+	"github.com/seerx/runjson/pkg/schema/arguments"
+
+	"github.com/seerx/runjson/internal/reflects"
 )
 
 // Service 服务定义
@@ -37,8 +39,9 @@ type Service struct {
 
 func (s *Service) Run(ctx *context.Context, argument interface{}) (interface{}, error) {
 	var arg *reflect.Value
+	fm := &intf.FieldMap{}
 	if s.requestObject != nil {
-		a, err := s.requestObject.NewInstance("", argument, s.requestObjectMgr)
+		a, err := s.requestObject.NewInstance("", argument, s.requestObjectMgr, fm)
 		if err != nil {
 			return nil, err
 		}
@@ -50,6 +53,7 @@ func (s *Service) Run(ctx *context.Context, argument interface{}) (interface{}, 
 		Param:           ctx.Param,
 		RequestArgument: arg,
 		InjectValueMap:  map[reflect.Type]reflect.Value{},
+		FieldMap:        fm,
 	}
 
 	args := make([]reflect.Value, len(s.inputArgs), len(s.inputArgs))

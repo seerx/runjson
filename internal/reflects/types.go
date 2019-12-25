@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/seerx/chain/internal/util"
+	"github.com/seerx/runjson/internal/util"
 )
 
 // TypeInfo 解析 reflect.Type 的信息

@@ -3,7 +3,7 @@ package validators
 import (
 	"reflect"
 
-	"github.com/seerx/chain/internal/reflects"
+	"github.com/seerx/runjson/internal/reflects"
 )
 
 // GenerateValidators 生成验证信息

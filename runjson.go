@@ -1,4 +1,4 @@
-package chain
+package runjson
 
 import (
 	"encoding/json"
@@ -6,23 +6,23 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/seerx/chain/pkg/context"
+	"github.com/seerx/runjson/pkg/context"
 
-	"github.com/seerx/chain/internal/object"
+	"github.com/seerx/runjson/internal/object"
 
-	"github.com/seerx/chain/pkg/inject"
+	"github.com/seerx/runjson/pkg/inject"
 
-	"github.com/seerx/chain/pkg/intf"
+	"github.com/seerx/runjson/pkg/intf"
 
-	"github.com/seerx/chain/pkg/apimap"
+	"github.com/seerx/runjson/pkg/apimap"
 
-	"github.com/seerx/chain/pkg/schema"
+	"github.com/seerx/runjson/pkg/schema"
 
 	"github.com/sirupsen/logrus"
 )
 
-// Chain 结构体
-type Chain struct {
+// Runner 结构体
+type Runner struct {
 	// 用于对外接口文档
 	ApiMap *apimap.MapInfo
 	// 用于执行服务
@@ -39,8 +39,8 @@ type Chain struct {
 	//funcs   map[string]*schema.Service
 }
 
-func New() *Chain {
-	return &Chain{
+func New() *Runner {
+	return &Runner{
 		ApiMap: &apimap.MapInfo{
 			Groups:   nil,
 			Request:  map[string]*apimap.ObjectInfo{},
@@ -57,12 +57,12 @@ func New() *Chain {
 }
 
 // Register 注册功能
-func (c *Chain) Register(loaders ...intf.Loader) {
+func (c *Runner) Register(loaders ...intf.Loader) {
 	c.loaders = append(c.loaders, loaders...)
 }
 
 // Execute 执行
-func (c *Chain) Execute(ctx *context.Context, data string) (Responses, error) {
+func (c *Runner) Execute(ctx *context.Context, data string) (Responses, error) {
 	c.log.Debug("Requests: \n%s", data)
 	var reqs = Requests{}
 	err := json.Unmarshal([]byte(data), &reqs)
@@ -104,7 +104,7 @@ func (c *Chain) Execute(ctx *context.Context, data string) (Responses, error) {
 }
 
 // Explain 解释定义
-func (c *Chain) Explain() error {
+func (c *Runner) Explain() error {
 	// 用于接口的 API 文档信息
 	amap := c.ApiMap
 

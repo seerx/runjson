@@ -1,12 +1,17 @@
 package arguments
 
-import "reflect"
+import (
+	"reflect"
+
+	"github.com/seerx/runjson/pkg/intf"
+)
 
 // ArgumentContext 参数上下文
 type ArgumentContext struct {
 	Param           map[string]interface{}
 	InjectValueMap  map[reflect.Type]reflect.Value
 	RequestArgument *reflect.Value
+	FieldMap        *intf.FieldMap
 }
 
 // 参数接口

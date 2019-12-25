@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/seerx/chain/internal/reflects"
+	"github.com/seerx/runjson/internal/reflects"
 
-	"github.com/seerx/chain/internal/object"
-	"github.com/seerx/chain/pkg/apimap"
+	"github.com/seerx/runjson/internal/object"
+	"github.com/seerx/runjson/pkg/apimap"
 )
 
 // traversal 遍历 typ

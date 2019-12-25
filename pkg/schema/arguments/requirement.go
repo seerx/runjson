@@ -9,8 +9,11 @@ type ArgRequire struct {
 }
 
 func (a *ArgRequire) CreateValue(ctx *ArgumentContext) reflect.Value {
-
-	panic("implement me")
+	if a.IsPtr {
+		return reflect.ValueOf(ctx.FieldMap)
+	}
+	return reflect.ValueOf(ctx.FieldMap).Elem()
+	//panic("implement me")
 }
 
 func (a *ArgRequire) IsInjectInterface() bool {

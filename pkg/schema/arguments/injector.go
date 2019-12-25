@@ -3,7 +3,7 @@ package arguments
 import (
 	"reflect"
 
-	"github.com/seerx/chain/pkg/inject"
+	"github.com/seerx/runjson/pkg/inject"
 )
 
 type ArgInjector struct {

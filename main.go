@@ -1,7 +1,7 @@
-package chain
+package runjson
 
 import (
-	"github.com/seerx/chain/pkg/intf"
+	"github.com/seerx/runjson/pkg/intf"
 	"github.com/sirupsen/logrus"
 )
 
@@ -9,7 +9,7 @@ var log = logrus.Logger{
 	ReportCaller: true,
 }
 
-var chain = &Chain{
+var chain = &Runner{
 	log: log,
 }
 

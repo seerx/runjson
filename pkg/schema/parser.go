@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/seerx/chain/internal/object"
-	"github.com/seerx/chain/internal/reflects"
-	"github.com/seerx/chain/internal/types"
-	"github.com/seerx/chain/pkg/apimap"
-	"github.com/seerx/chain/pkg/inject"
-	"github.com/seerx/chain/pkg/schema/arguments"
-	"github.com/seerx/chain/pkg/schema/input"
+	"github.com/seerx/runjson/internal/object"
+	"github.com/seerx/runjson/internal/reflects"
+	"github.com/seerx/runjson/internal/types"
+	"github.com/seerx/runjson/pkg/apimap"
+	"github.com/seerx/runjson/pkg/inject"
+	"github.com/seerx/runjson/pkg/schema/arguments"
 	"github.com/sirupsen/logrus"
 )
 
@@ -73,6 +72,12 @@ func checkInArguments(svc *Service,
 	svc.inputArgs = make([]arguments.Argument, ic, ic)
 	for n := 0; n < ic; n++ {
 		in := svc.funcType.In(n)
+		if is, ptr := types.IsFieldMap(in); is {
+			// 用于判断必填字段检查的参数
+			svc.inputArgs[n] = &arguments.ArgRequire{IsPtr: ptr}
+			continue
+		}
+
 		typeInfo := reflects.ParseType(svc.location, in)
 		if n == 0 {
 			// 结构体
@@ -80,11 +85,7 @@ func checkInArguments(svc *Service,
 			svc.inputArgs[n] = svc.loaderStruct
 			continue
 		}
-		if input.IsRequirementArgument(in) {
-			// 用于判断必填字段检查的参数
-			svc.inputArgs[n] = &arguments.ArgRequire{IsPtr: typeInfo.IsRawPtr}
-			continue
-		}
+
 		// 注入字段
 		if typeInfo.IsInterface {
 			// 接口类型，必须是注入字段
