@@ -5,15 +5,11 @@ import (
 )
 
 type ArgRequire struct {
-	IsPtr bool
+	//IsPtr bool
 }
 
 func (a *ArgRequire) CreateValue(ctx *ArgumentContext) reflect.Value {
-	if a.IsPtr {
-		return reflect.ValueOf(ctx.FieldMap)
-	}
-	return reflect.ValueOf(ctx.FieldMap).Elem()
-	//panic("implement me")
+	return reflect.ValueOf(ctx.Requirement)
 }
 
 func (a *ArgRequire) IsInjectInterface() bool {

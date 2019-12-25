@@ -18,6 +18,10 @@ type ApiTest struct {
 	V  int       `json:"v"`
 	D  float32   `json:"d"`
 	T  time.Time `json:"t"`
+
+	R  intf.Require
+	I1 Cls
+	I2 *Cls
 }
 
 func (a ApiTest) Group() *intf.Group {
@@ -54,8 +58,12 @@ type Req struct {
 	Reqs []*ReqID `json:"reqs" c:"desc:啊哈"`
 }
 
-func (a *ApiTest) Test1(aa *Req, fm *intf.FieldMap) ([]*Response, error) {
-	fmt.Println(fm)
+func (a *ApiTest) Test1(aa Req, cls Cls) ([]*Response, error) {
+	fmt.Println(a.R)
+	//c.Close()
+	cls.Close()
+	a.I1.Close()
+	a.I2.Close()
 	return []*Response{&Response{Val: "123"}}, nil
 }
 
@@ -68,17 +76,28 @@ func (a ApiTest) Test2(abb string) (*Response, error) {
 	}, nil
 }
 
-func InjectFn(a map[string]interface{}) (io.Closer, error) {
-	return nil, nil
+type Cls struct {
+	V string
 }
 
-func InjectFn1(a map[string]interface{}) (io.ReadCloser, error) {
-	return nil, nil
+func (c *Cls) Close() error {
+	fmt.Println("OK", c.V)
+	return nil
+}
+
+func InjectFn(a map[string]interface{}) (io.Closer, error) {
+	return &Cls{V: "test"}, nil
+}
+
+func InjectFn1(a map[string]interface{}) (*Cls, error) {
+	return &Cls{V: "另一个"}, nil
 }
 
 func main() {
 	ch := runjson.New()
-
+	if err := ch.Inject(InjectFn, InjectFn1); err != nil {
+		panic(err)
+	}
 	ch.Register(&ApiTest{})
 	err := ch.Explain()
 	if err != nil {

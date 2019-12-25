@@ -1,4 +1,4 @@
-package apimap
+package graph
 
 import (
 	"fmt"

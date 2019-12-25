@@ -6,17 +6,17 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/seerx/runjson/internal/runner"
+
+	"github.com/seerx/runjson/pkg/graph"
+
 	"github.com/seerx/runjson/pkg/context"
 
 	"github.com/seerx/runjson/internal/object"
 
-	"github.com/seerx/runjson/pkg/inject"
+	"github.com/seerx/runjson/internal/runner/inject"
 
 	"github.com/seerx/runjson/pkg/intf"
-
-	"github.com/seerx/runjson/pkg/apimap"
-
-	"github.com/seerx/runjson/pkg/schema"
 
 	"github.com/sirupsen/logrus"
 )
@@ -24,9 +24,9 @@ import (
 // Runner 结构体
 type Runner struct {
 	// 用于对外接口文档
-	ApiMap *apimap.MapInfo
+	ApiMap *graph.MapInfo
 	// 用于执行服务
-	service *schema.Services
+	service *runner.Runners
 	// 日志
 	log logrus.Logger
 	// 注册的信息
@@ -35,21 +35,25 @@ type Runner struct {
 	injector *inject.InjectorManager
 	// 请求参数管理
 	requestObjectManager *object.RequestObjectManager
-	//groups  []*schema.Group
-	//funcs   map[string]*schema.Service
+	//groups  []*runner.Group
+	//funcs   map[string]*runner.JSONRunner
 }
 
 func New() *Runner {
+	log := logrus.Logger{
+		Level:     logrus.WarnLevel,
+		Formatter: &logrus.TextFormatter{},
+	}
 	return &Runner{
-		ApiMap: &apimap.MapInfo{
+		ApiMap: &graph.MapInfo{
 			Groups:   nil,
-			Request:  map[string]*apimap.ObjectInfo{},
-			Response: map[string]*apimap.ObjectInfo{},
+			Request:  map[string]*graph.ObjectInfo{},
+			Response: map[string]*graph.ObjectInfo{},
 		},
-		log:     logrus.Logger{},
+		log:     log,
 		loaders: nil,
-		service: &schema.Services{
-			ServiceMap: map[string]*schema.Service{},
+		service: &runner.Runners{
+			RunnerMap: map[string]*runner.JSONRunner{},
 		},
 		injector:             inject.NewManager(),
 		requestObjectManager: object.NewRequestObjectManager(),
@@ -59,6 +63,16 @@ func New() *Runner {
 // Register 注册功能
 func (c *Runner) Register(loaders ...intf.Loader) {
 	c.loaders = append(c.loaders, loaders...)
+}
+
+// Inject 注册注入函数
+func (c *Runner) Inject(fns ...interface{}) error {
+	for _, fn := range fns {
+		if err := c.injector.Register(fn); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Execute 执行
@@ -79,7 +93,7 @@ func (c *Runner) Execute(ctx *context.Context, data string) (Responses, error) {
 			resKey = request.Service
 		}
 		c.log.Debug("Call: %s", request.Service)
-		svc := c.service.GetService(request.Service)
+		svc := c.service.Get(request.Service)
 		if svc != nil {
 			res, err := svc.Run(ctx, request.Args)
 
@@ -95,7 +109,7 @@ func (c *Runner) Execute(ctx *context.Context, data string) (Responses, error) {
 			}
 		} else {
 			rsp[resKey] = &Response{
-				Error: "No Service Named " + request.Service,
+				Error: "No JSONRunner Named " + request.Service,
 			}
 		}
 		//request.Method
@@ -131,15 +145,15 @@ func (c *Runner) Explain() error {
 				continue
 			}
 
-			// 生成 Service 名称
+			// 生成 JSONRunner 名称
 			svcName, err := grp.GenerateServiceName(method.Name)
 			if err != nil {
 				// 同名 service 已经存在
-				log.WithError(err).Error("Service exists")
+				log.WithError(err).Error("JSONRunner exists")
 				continue
 			}
 			// 解析服务函数
-			svc, err := schema.TryParserAsService(loaderTyp,
+			svc, err := runner.TryParserAsService(loaderTyp,
 				c.injector,
 				c.requestObjectManager,
 				method,
@@ -158,7 +172,7 @@ func (c *Runner) Explain() error {
 				svc.Name = svcName
 				// 解析服务描述信息
 				//grp. = append(grp.Funcs, fn)
-				c.service.AddService(svc)
+				c.service.Add(svc)
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-package apimap
+package graph
 
 // ObjectInfo 输入、输出数据信息描述
 type ObjectInfo struct {

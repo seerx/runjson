@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/seerx/runjson/pkg/intf"
+	"github.com/seerx/runjson/internal/runner/arguments/fieldmap"
 
 	"github.com/seerx/runjson/internal/object/validators"
 
@@ -65,7 +65,7 @@ type RequestObject struct {
 	//Validators []validators.Validator // 数据有效性检查
 }
 
-func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, mgr *RequestObjectManager, fm *intf.FieldMap) (reflect.Value, error) {
+func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, mgr *RequestObjectManager, fm *fieldmap.FieldMap) (reflect.Value, error) {
 	if data == nil {
 		if rof.Require {
 			// 不能为空
@@ -151,7 +151,7 @@ func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, 
 	//return nil, nil
 }
 
-func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data interface{}, mgr *RequestObjectManager, fm *intf.FieldMap) (reflect.Value, error) {
+func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data interface{}, mgr *RequestObjectManager, fm *fieldmap.FieldMap) (reflect.Value, error) {
 	if data == nil {
 		// 数据是空的
 		return reflect.ValueOf(nil), nil

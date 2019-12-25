@@ -11,7 +11,7 @@ type ArgumentContext struct {
 	Param           map[string]interface{}
 	InjectValueMap  map[reflect.Type]reflect.Value
 	RequestArgument *reflect.Value
-	FieldMap        *intf.FieldMap
+	Requirement     intf.Require
 }
 
 // 参数接口

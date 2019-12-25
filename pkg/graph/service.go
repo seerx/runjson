@@ -1,4 +1,4 @@
-package apimap
+package graph
 
 // ServiceInfo 服务功能定义，给前端的接口
 type ServiceInfo struct {

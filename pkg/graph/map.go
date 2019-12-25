@@ -1,4 +1,4 @@
-package apimap
+package graph
 
 import "github.com/seerx/runjson/pkg/intf"
 

@@ -46,19 +46,27 @@ func (im *InjectorManager) Register(fn interface{}) error {
 
 	// 第一个返回值，必须是接口或者指向结构体的指针
 	o1 := typ.Out(0)
-	o1Typ := reflects.ParseType(loc, o1)
-	if (!o1Typ.IsInterface) && (!(o1Typ.IsRawPtr && o1Typ.IsStruct)) {
-		// 不是接口，且不是指向结构体的指针
-		return fmt.Errorf("Injector func first return must be a pointer of struct or a interface [%s]", loc.String())
+	o1Ptr := o1.Kind() == reflect.Ptr
+	keyType := o1
+	if o1Ptr {
+		keyType = o1.Elem()
 	}
+
+	if o1.Kind() != reflect.Interface && ((!o1Ptr) || keyType.Kind() != reflect.Struct) {
+		return fmt.Errorf("Injector func first return value must be interface or a poniter of struct [%s]", loc.String())
+	}
+
+	//o1Typ := reflects.ParseType(loc, o1)
+	//if (o1.Kind() != reflect.Interface) && (o1.Kind() != reflect.Struct) {
+	//	// 不是接口，且不是结构体
+	//	return fmt.Errorf("Injector func first return value must be struct or interface [%s]", loc.String())
+	//}
 	// 第二个参数必须是 error
 	o2 := typ.Out(1)
 	if !types.IsError(o2) {
 		// 不是 error
 		return fmt.Errorf("Injector func second return must be error [%s]", loc.String())
 	}
-
-	keyType := o1Typ.Reference
 
 	// 查找是否已经存在
 	old, exists := im.injectors[keyType]
@@ -68,7 +76,7 @@ func (im *InjectorManager) Register(fn interface{}) error {
 			return nil
 		}
 		// 已经存在
-		return fmt.Errorf("Type [%s] is Registered by func [%s]", o1Typ.Name, old.Location.String())
+		return fmt.Errorf("Inject type [%s] is Registered by func [%s]", o1.Name(), old.Location.String())
 	}
 
 	// 判断输入参数
@@ -83,9 +91,10 @@ func (im *InjectorManager) Register(fn interface{}) error {
 
 	// 注册
 	im.injectors[keyType] = &Injector{
-		Type:     keyType,
-		Func:     reflect.ValueOf(fn),
-		Location: loc,
+		Type:                  keyType,
+		Func:                  reflect.ValueOf(fn),
+		Location:              loc,
+		ReturnTypeIsInterface: o1.Kind() == reflect.Interface,
 	}
 
 	return nil
