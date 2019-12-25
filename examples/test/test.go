@@ -6,6 +6,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/seerx/runjson/pkg/graph"
+
 	"github.com/seerx/runjson"
 
 	"github.com/seerx/runjson/pkg/context"
@@ -73,10 +75,12 @@ func (a *ApiTest) Test1(aa Req, cls Cls) ([]*Response, error) {
 
 func (a *ApiTest) Test2Info() intf.FuncInfo {
 	return intf.FuncInfo{
-		Descrition: `测试函数 222`,
-		Deprecated: true,
+		Description: `测试函数 222`,
+		Deprecated:  true,
+		History: []*graph.CR{
+			{"2019/12/26", "hyb", "创建"},
+		},
 	}
-
 }
 
 func (a ApiTest) Test2(abb string) (*Response, error) {

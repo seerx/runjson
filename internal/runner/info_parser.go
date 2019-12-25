@@ -22,14 +22,15 @@ func TryToParseFuncInfo(loader interface{}, loaderType reflect.Type, funcName st
 	out := m.Func.Call([]reflect.Value{reflect.ValueOf(loader)})
 
 	outType := mType.Out(0)
-	if outType.Kind() == reflect.String {
-		// 只有说明信息
-		if desc, ok := out[0].Interface().(string); ok {
-			return &intf.FuncInfo{
-				Descrition: desc,
-			}
-		}
-	} else if yes, ptr := types.IsFuncInfo(outType); yes {
+	//if outType.Kind() == reflect.String {
+	//	// 只有说明信息
+	//	if desc, ok := out[0].Interface().(string); ok {
+	//		return &intf.FuncInfo{
+	//			Description: desc,
+	//		}
+	//	}
+	//} else
+	if yes, ptr := types.IsFuncInfo(outType); yes {
 		if ptr {
 			if info, ok := out[0].Interface().(*intf.FuncInfo); ok {
 				return info

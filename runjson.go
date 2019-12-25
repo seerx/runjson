@@ -131,7 +131,7 @@ func (c *Runner) Explain() error {
 			return errors.New("Group's name shuld not be empty")
 		}
 		// 获得分组
-		grp := amap.GetGroup(grpInfo)
+		grp := amap.GetGroup(grpInfo.Name, grpInfo.Description)
 		// 解析 functions
 		loaderTyp := reflect.TypeOf(loader)
 
@@ -179,8 +179,9 @@ func (c *Runner) Explain() error {
 				// 解析服务描述信息
 				info := runner.TryToParseFuncInfo(loader, loaderTyp, method.Name)
 				if info != nil {
-					svcInfo.Description = info.Descrition
+					svcInfo.Description = info.Description
 					svcInfo.Deprecated = info.Deprecated
+					svcInfo.History = info.History
 				}
 				grp.AddService(svcInfo)
 				//grp. = append(grp.Funcs, fn)

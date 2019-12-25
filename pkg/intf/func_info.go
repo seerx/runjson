@@ -1,7 +1,10 @@
 package intf
 
+import "github.com/seerx/runjson/pkg/graph"
+
 // FuncInfo 功能信息
 type FuncInfo struct {
-	Descrition string
-	Deprecated bool
+	Description string
+	Deprecated  bool
+	History     []*graph.CR
 }
