@@ -12,7 +12,7 @@ import (
 
 	"github.com/seerx/runjson/pkg/context"
 
-	"github.com/seerx/runjson/internal/object"
+	"github.com/seerx/runjson/internal/runner/arguments/request"
 
 	"github.com/seerx/runjson/internal/runner/inject"
 
@@ -34,7 +34,7 @@ type Runner struct {
 	// 注入管理
 	injector *inject.InjectorManager
 	// 请求参数管理
-	requestObjectManager *object.RequestObjectManager
+	requestObjectManager *request.RequestObjectManager
 	//groups  []*runner.Group
 	//funcs   map[string]*runner.JSONRunner
 }
@@ -56,7 +56,7 @@ func New() *Runner {
 			RunnerMap: map[string]*runner.JSONRunner{},
 		},
 		injector:             inject.NewManager(),
-		requestObjectManager: object.NewRequestObjectManager(),
+		requestObjectManager: request.NewRequestObjectManager(),
 	}
 }
 

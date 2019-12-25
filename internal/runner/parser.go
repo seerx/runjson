@@ -12,8 +12,8 @@ import (
 
 	"github.com/seerx/runjson/pkg/graph"
 
-	"github.com/seerx/runjson/internal/object"
 	"github.com/seerx/runjson/internal/reflects"
+	"github.com/seerx/runjson/internal/runner/arguments/request"
 	"github.com/seerx/runjson/internal/types"
 	"github.com/sirupsen/logrus"
 )
@@ -21,7 +21,7 @@ import (
 // TryParserAsService 尝试解析函数为服务
 func TryParserAsService(loader reflect.Type,
 	injectManager *inject.InjectorManager,
-	requestObjectManager *object.RequestObjectManager,
+	requestObjectManager *request.RequestObjectManager,
 	method reflect.Method,
 	info *graph.ApiInfo,
 	log logrus.Logger) (*JSONRunner, error) {
@@ -50,8 +50,8 @@ func TryParserAsService(loader reflect.Type,
 
 	// 解析输入参数
 	var inInfo *graph.ObjectInfo
-	var inReq *object.RequestObjectField
-	//var inObj *object.RequestObject
+	var inReq *request.RequestObjectField
+	//var inObj *request.RequestObject
 	inMap := map[string]int{}
 	inInfo, inReq, err = checkInArguments(svc, requestObjectManager, inMap, info.Request, log)
 	if err != nil {
@@ -70,14 +70,14 @@ func TryParserAsService(loader reflect.Type,
 
 // 检查函数的输入参数
 func checkInArguments(svc *JSONRunner,
-	requestObjectManager *object.RequestObjectManager,
+	requestObjectManager *request.RequestObjectManager,
 	referenceMap map[string]int,
 	objMap map[string]*graph.ObjectInfo,
-	log logrus.Logger) (*graph.ObjectInfo, *object.RequestObjectField, error) {
+	log logrus.Logger) (*graph.ObjectInfo, *request.RequestObjectField, error) {
 	ic := svc.funcType.NumIn()
 	var inInfo *graph.ObjectInfo
-	var inObj *object.RequestObject
-	var inObjField *object.RequestObjectField
+	var inObj *request.RequestObject
+	var inObjField *request.RequestObjectField
 	svc.inputArgs = make([]arguments.Argument, ic, ic)
 	for n := 0; n < ic; n++ {
 		in := svc.funcType.In(n)
@@ -136,7 +136,7 @@ func checkInArguments(svc *JSONRunner,
 					return inInfo, nil, fmt.Errorf("JSONRunner function invalid type: %s -> %s", err, svc.location)
 				}
 
-				inObjField = object.GenerateRequestObjectField(nil, "", typeInfo, false)
+				inObjField = request.GenerateRequestObjectField(nil, "", typeInfo, false)
 
 				svc.inputArgs[n] = &arguments.ArgRequest{
 					Arg:      inObj,
@@ -155,7 +155,7 @@ func checkInArguments(svc *JSONRunner,
 			if inInfo, inObj, err = objtraver.Traversal(svc.location, typeInfo.Raw, referenceMap, objMap, requestObjectManager); err != nil {
 				return inInfo, nil, fmt.Errorf("JSONRunner function invalid type: %s -> %s", err, svc.location)
 			}
-			inObjField = object.GenerateRequestObjectField(nil, "", typeInfo, false)
+			inObjField = request.GenerateRequestObjectField(nil, "", typeInfo, false)
 			svc.inputArgs[n] = &arguments.ArgRequest{
 				Arg:      inObj,
 				ArgField: inObjField,

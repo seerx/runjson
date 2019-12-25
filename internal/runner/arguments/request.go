@@ -3,12 +3,12 @@ package arguments
 import (
 	"reflect"
 
-	"github.com/seerx/runjson/internal/object"
+	"github.com/seerx/runjson/internal/runner/arguments/request"
 )
 
 type ArgRequest struct {
-	ArgField *object.RequestObjectField
-	Arg      *object.RequestObject
+	ArgField *request.RequestObjectField
+	Arg      *request.RequestObject
 }
 
 func (a *ArgRequest) CreateValue(ctx *ArgumentContext) reflect.Value {

@@ -1,12 +1,12 @@
-package object
+package request
 
 import (
 	"fmt"
 	"reflect"
 
-	"github.com/seerx/runjson/internal/runner/arguments/fieldmap"
+	validators2 "github.com/seerx/runjson/internal/runner/arguments/request/validators"
 
-	"github.com/seerx/runjson/internal/object/validators"
+	"github.com/seerx/runjson/internal/runner/arguments/fieldmap"
 
 	"github.com/seerx/runjson/internal/reflects"
 )
@@ -15,18 +15,18 @@ type RequestObjectField struct {
 	Name         string // json tag 或者 fieldName，用于从  map 中获取值
 	FieldName    string // 结构字段名称
 	Type         reflect.Type
-	Ptr          bool                   // 定义的类型是否是指针
-	Slice        bool                   // 定义的类型是都是切片
-	SliceType    reflect.Type           // 切片类型定义
-	SliceItemPtr bool                   // Slice 项的类型是否是指针
-	Require      bool                   // 必填参数
-	Validators   []validators.Validator // 数据验证
+	Ptr          bool                    // 定义的类型是否是指针
+	Slice        bool                    // 定义的类型是都是切片
+	SliceType    reflect.Type            // 切片类型定义
+	SliceItemPtr bool                    // Slice 项的类型是否是指针
+	Require      bool                    // 必填参数
+	Validators   []validators2.Validator // 数据验证
 }
 
 func GenerateRequestObjectField(tag *reflects.ChainTag, fieldName string, info *reflects.TypeInfo, require bool) *RequestObjectField {
-	var vlds []validators.Validator
+	var vlds []validators2.Validator
 	if tag != nil && info.IsPrimitive {
-		vlds = validators.GenerateValidators(info.Reference, tag)
+		vlds = validators2.GenerateValidators(info.Reference, tag)
 	}
 
 	jsonName := ""
@@ -95,7 +95,7 @@ func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, 
 
 		itemObj := mgr.Find(rof.Type)
 		if itemObj == nil {
-			return reflect.ValueOf(nil), fmt.Errorf("Cann't find %s's object'", rof.Name)
+			return reflect.ValueOf(nil), fmt.Errorf("Cann't find %s's request'", rof.Name)
 		}
 		slice := reflect.MakeSlice(rof.SliceType, 0, len(ary))
 		for n, v := range ary {
@@ -170,7 +170,7 @@ func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data i
 
 	mp, ok := data.(map[string]interface{})
 	if !ok {
-		return reflect.ValueOf(nil), fmt.Errorf("[%s.%s] Expect object %s", parentPath, fieldName, ro.TypeName)
+		return reflect.ValueOf(nil), fmt.Errorf("[%s.%s] Expect request %s", parentPath, fieldName, ro.TypeName)
 	}
 	inst := reflect.New(ro.Type)
 	elem := inst.Elem()

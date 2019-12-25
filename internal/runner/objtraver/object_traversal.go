@@ -8,7 +8,7 @@ import (
 
 	"github.com/seerx/runjson/internal/reflects"
 
-	"github.com/seerx/runjson/internal/object"
+	"github.com/seerx/runjson/internal/runner/arguments/request"
 )
 
 // Traversal 遍历 typ
@@ -19,7 +19,7 @@ func Traversal(loc *reflects.Location,
 	typ reflect.Type,
 	referenceMap map[string]int,
 	objMap map[string]*graph.ObjectInfo,
-	requestMgr *object.RequestObjectManager) (*graph.ObjectInfo, *object.RequestObject, error) {
+	requestMgr *request.RequestObjectManager) (*graph.ObjectInfo, *request.RequestObject, error) {
 
 	tp := reflects.ParseType(loc, typ)
 	// 指向类型是结构体
@@ -54,10 +54,10 @@ func Traversal(loc *reflects.Location,
 		Children: nil,
 	}
 	objMap[obj.ID] = obj
-	var requestObj *object.RequestObject
+	var requestObj *request.RequestObject
 	if requestMgr != nil {
 		// 生成 RequestObject 顶级对象
-		requestObj = &object.RequestObject{
+		requestObj = &request.RequestObject{
 			//ID:        tp.ID(),
 			TypeName:  tp.Name,
 			Type:      tp.Reference,
@@ -117,8 +117,8 @@ func Traversal(loc *reflects.Location,
 			obj.Children = append(obj.Children, itemObj)
 
 			if requestMgr != nil {
-				reqField := object.GenerateRequestObjectField(fdTag, fd.Name, &fdInfo.TypeInfo, fdTag.Require)
-				//reqField := &object.RequestObjectField{
+				reqField := request.GenerateRequestObjectField(fdTag, fd.Name, &fdInfo.TypeInfo, fdTag.Require)
+				//reqField := &request.RequestObjectField{
 				//	Name:         fdTag.FieldName,
 				//	Type:         fdInfo.Reference,
 				//	Ptr:          fdInfo.IsRawPtr,
