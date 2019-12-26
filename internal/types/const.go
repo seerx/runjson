@@ -11,10 +11,18 @@ var (
 	requireType     = reflect.TypeOf((*intf.Require)(nil)).Elem()
 	funcInfoType    = reflect.TypeOf((*intf.FuncInfo)(nil)).Elem()
 	injectParamType = reflect.TypeOf((*map[string]interface{})(nil)).Elem()
+	resultsType     = reflect.TypeOf((*intf.Results)(nil)).Elem()
 )
 
 func IsInjectParam(typ reflect.Type) bool {
 	return injectParamType == typ
+}
+
+func IsResults(typ reflect.Type) bool {
+	//if typ.Kind() == reflect.Ptr {
+	//	return typ.Elem() == responsesType, true
+	//}
+	return typ == resultsType
 }
 
 func IsFuncInfo(typ reflect.Type) (bool, bool) {

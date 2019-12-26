@@ -22,6 +22,6 @@ func (a *ArgRequest) CreateValue(ctx *ArgumentContext) reflect.Value {
 	return (*ctx.RequestArgument).Elem()
 }
 
-func (a *ArgRequest) IsInjectInterface() bool {
-	return false
-}
+//func (a *ArgRequest) IsInjectInterface() bool {
+//	return false
+//}

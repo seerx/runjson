@@ -12,10 +12,11 @@ type ArgumentContext struct {
 	InjectValueMap  map[reflect.Type]reflect.Value
 	RequestArgument *reflect.Value
 	Requirement     intf.Require
+	Results         intf.Results
 }
 
 // 参数接口
 type Argument interface {
 	CreateValue(ctx *ArgumentContext) reflect.Value
-	IsInjectInterface() bool
+	//IsInjectInterface() bool
 }

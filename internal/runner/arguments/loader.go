@@ -12,12 +12,19 @@ type InjectField struct {
 	ValueIsPtr bool
 }
 
+// FieldResults 用于在 loader 中加载
+type FieldResults struct {
+	//ValueIsPtr bool
+	FieldName string
+}
+
 // LoaderScheme loader 结构定义
 type LoaderScheme struct {
 	Type reflect.Type
 
-	RequireFields []string
-	InjectFields  []*InjectField
+	ResponsesFields []*FieldResults
+	RequireFields   []string
+	InjectFields    []*InjectField
 }
 
 func (ls *LoaderScheme) CreateValue(ctx *ArgumentContext) reflect.Value {
@@ -26,6 +33,11 @@ func (ls *LoaderScheme) CreateValue(ctx *ArgumentContext) reflect.Value {
 	for _, fd := range ls.RequireFields {
 		field := elem.FieldByName(fd)
 		field.Set(reflect.ValueOf(ctx.Requirement))
+	}
+
+	for _, fd := range ls.ResponsesFields {
+		field := elem.FieldByName(fd.FieldName)
+		field.Set(reflect.ValueOf(ctx.Results))
 	}
 
 	for _, fd := range ls.InjectFields {
@@ -51,9 +63,9 @@ func (ls *LoaderScheme) CreateValue(ctx *ArgumentContext) reflect.Value {
 	return inst
 }
 
-func (ls *LoaderScheme) IsInjectInterface() bool {
-	return false
-}
+//func (ls *LoaderScheme) IsInjectInterface() bool {
+//	return false
+//}
 
 //type LoaderScheme struct {
 //}

@@ -1,17 +1,17 @@
-package runjson
+package intf
 
-// Response 返回的数据类型
-type Response struct {
+// ResponseItem 返回项
+type ResponseItem struct {
 	Error string      `json:"error,omitempty"`
 	Data  interface{} `json:"data,omitempty"`
 }
 
-type Responses map[string]*Response
+// Response 返回值
+type Response map[string][]*ResponseItem
 
 // Request 请求对象
 type Request struct {
 	Service string      `json:"service"`
-	Alias   string      `json:"alias"` // 别名，用于接收返回数据
 	Args    interface{} `json:"args"`
 }
 

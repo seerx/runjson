@@ -31,7 +31,7 @@ func (l *Location) String() string {
 	if l.Func == "" {
 		return fmt.Sprintf("%s struct:%s", l.Package, l.Struct)
 	}
-	return fmt.Sprintf("%s %s.%s", l.Package, l.Struct, l.Func)
+	return fmt.Sprintf("%s.%s.%s", l.Package, l.Struct, l.Func)
 }
 
 // ParseFuncLocation 解析函数信息
@@ -45,6 +45,32 @@ func ParseFuncLocation(aFunc interface{}) *Location {
 		return &Location{
 			Func:    fn[p+1:],
 			Package: fn[0:p],
+		}
+	}
+
+	return nil
+}
+
+// ParseFuncLocationInStruct 解析函数信息
+func ParseFuncLocationInStruct(aFunc interface{}) *Location {
+	// 获取函数名称
+	fn := runtime.FuncForPC(reflect.ValueOf(aFunc).Pointer()).Name()
+
+	p := strings.LastIndex(fn, ".")
+
+	if p > 0 {
+		typ := reflect.TypeOf(aFunc)
+		if typ.NumIn() > 0 {
+			structArg := typ.In(0)
+			if structArg.Kind() == reflect.Ptr {
+				structArg = structArg.Elem()
+			}
+
+			return &Location{
+				Func:    fn[p+1:],
+				Struct:  structArg.Name(),
+				Package: fn[0:p],
+			}
 		}
 	}
 

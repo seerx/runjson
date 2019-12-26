@@ -30,6 +30,6 @@ func (a *ArgInjector) CreateValue(ctx *ArgumentContext) reflect.Value {
 	return val.Elem()
 }
 
-func (a *ArgInjector) IsInjectInterface() bool {
-	return a.IsInterface
-}
+//func (a *ArgInjector) IsInjectInterface() bool {
+//	return a.IsInterface
+//}

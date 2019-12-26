@@ -87,6 +87,11 @@ func checkInArguments(svc *JSONRunner,
 			continue
 		}
 
+		if types.IsResults(in) {
+			svc.inputArgs[n] = &arguments.ArgResults{}
+			continue
+		}
+
 		// 接口，必须是注入字段
 		if in.Kind() == reflect.Interface {
 			// 接口类型，必须是注入字段

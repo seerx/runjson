@@ -27,6 +27,14 @@ func ParseLoader(loaderType reflect.Type, injectorManager *inject.InjectorManage
 	for n := 0; n < loaderType.NumField(); n++ {
 		field := loaderType.Field(n)
 
+		if types.IsResults(field.Type) {
+			// 获取前面的执行结果
+			ls.ResponsesFields = append(ls.ResponsesFields, &arguments.FieldResults{
+				FieldName: field.Name,
+			})
+			continue
+		}
+
 		if types.IsRequirement(field.Type) {
 			if field.Name[:1] != strings.ToUpper(field.Name[:1]) {
 				fmt.Printf("Field %s will not be set to require, because it's not export\n", field.Name)
@@ -41,7 +49,9 @@ func ParseLoader(loaderType reflect.Type, injectorManager *inject.InjectorManage
 			typ = typ.Elem()
 			ptr = true
 		}
+
 		if typ.Kind() == reflect.Struct || typ.Kind() == reflect.Interface {
+
 			inj := injectorManager.Find(typ)
 			if inj != nil {
 				if field.Name[:1] != strings.ToUpper(field.Name[:1]) {

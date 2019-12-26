@@ -6,6 +6,8 @@ import (
 	"io"
 	"time"
 
+	"github.com/seerx/runjson/examples/test/tt"
+
 	"github.com/seerx/runjson/pkg/graph"
 
 	"github.com/seerx/runjson"
@@ -21,9 +23,10 @@ type ApiTest struct {
 	D  float32   `json:"d"`
 	T  time.Time `json:"t"`
 
-	R  intf.Require
-	I1 Cls
-	I2 *Cls
+	R   intf.Require
+	I1  Cls
+	I2  *Cls
+	Rsp intf.Results
 }
 
 func (a ApiTest) Group() *intf.Group {
@@ -47,6 +50,7 @@ type Response struct {
 	Key   string   `json:"key" c:"desc:键,require"`
 	Items []string `json:"items" c:"desc:数组"`
 	UAry  []*U     `json:"uAry" c:"desc:U数组"`
+	//Error error    `json:"error"`
 }
 
 type ReqID struct {
@@ -64,31 +68,55 @@ func (a *ApiTest) Test1Info() string {
 	return `测试函数 1`
 }
 
-func (a *ApiTest) Test1(aa Req, cls Cls) ([]*Response, error) {
+func (a ApiTest) Test1(aa Req, cls Cls) ([]*Response, error) {
 	fmt.Println(a.R)
 	//c.Close()
 	cls.Close()
 	a.I1.Close()
 	a.I2.Close()
+	func() {
+		val, err := a.Rsp.Get((&ApiTest{}).Test2)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			fmt.Println(val)
+		}
+	}()
+
+	val, err := a.Rsp.Get((&tt.TT{}).New)
+	if err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(val)
+	}
+
 	return []*Response{&Response{Val: "123"}}, nil
 }
 
+func (a *ApiTest) Test2(abb string) (*Response, error) {
+	return &Response{
+		Val:   "123",
+		Key:   abb,
+		Items: nil,
+		UAry:  nil,
+		//Error: errors.New("Error ............"),
+	}, nil
+}
+
 func (a *ApiTest) Test2Info() intf.FuncInfo {
+	//val, err := a.Rsp.Get((&ApiTest{}).Test1)
+	//if err != nil {
+	//	fmt.Println(err)
+	//} else {
+	//	fmt.Println(val)
+	//}
+
 	return intf.FuncInfo{
 		Description: `测试函数 222`,
 		History: []*graph.CR{
 			{"2019/12/26", "hyb", "创建"},
 		},
 	}
-}
-
-func (a ApiTest) Test2(abb string) (*Response, error) {
-	return &Response{
-		Val:   "123",
-		Key:   abb,
-		Items: nil,
-		UAry:  nil,
-	}, nil
 }
 
 type Cls struct {
@@ -109,17 +137,25 @@ func InjectFn1(a map[string]interface{}) (*Cls, error) {
 }
 
 func main() {
+
 	ch := runjson.New()
 	if err := ch.Inject(InjectFn, InjectFn1); err != nil {
 		panic(err)
 	}
-	ch.Register(&ApiTest{})
-	err := ch.Explain()
+	ch.Register(&ApiTest{}, &tt.TT{})
 
-	if info, err := json.MarshalIndent(ch.ApiInfo, "", "\t"); err == nil {
-		data := string(info)
-		fmt.Println(data)
-	}
+	ch.BeforeExecute(func(item *intf.Request) {
+		fmt.Println("before:", item.Service)
+	}).AfterExecute(func(item *intf.Request, result *intf.ResponseItem, results intf.Results) {
+		fmt.Println("after:", item.Service)
+	})
+
+	err := ch.Engage()
+
+	//if info, err := json.MarshalIndent(ch.ApiInfo, "", "\t"); err == nil {
+	//	data := string(info)
+	//	fmt.Println(data)
+	//}
 
 	if err != nil {
 		panic(err)
@@ -134,21 +170,20 @@ func main() {
 		Reqs: []*ReqID{{ID: 11}, {ID: 12}},
 	}
 
-	reqs := runjson.Requests{}
-	reqs = append(reqs, &runjson.Request{
+	reqs := intf.Requests{}
+	reqs = append(reqs, &intf.Request{
+		Service: "test.Test21",
+		Args:    B,
+	})
+	reqs = append(reqs, &intf.Request{
 		Service: "test.Test1",
-		Alias:   "ABC",
 		Args:    req,
 	})
-	//reqs = append(reqs, &runjson.Request{
-	//	Service: "test.Test1",
-	//	Args:    req,
-	//})
 
 	data, _ := json.Marshal(reqs)
 	str := string(data)
 
-	rsp, err := ch.Execute(&context.Context{}, str)
+	rsp, err := ch.Run(&context.Context{}, str)
 	if err != nil {
 		panic(err)
 	}
