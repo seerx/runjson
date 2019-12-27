@@ -319,7 +319,9 @@ func (r *Runner) Engage() error {
 				svcInfo := &graph.ServiceInfo{
 					Name:           svcName,
 					InputObjectID:  svc.RequestObjectID,
+					InputIsArray:   svc.RequestObjectIsArray,
 					OutputObjectID: svc.ReturnObjectID,
+					OutputIsArray:  svc.ReturnObjectIsArray,
 				}
 				// 解析服务描述信息
 				info := runner.TryToParseFuncInfo(loader, loaderTyp, method.Name)
