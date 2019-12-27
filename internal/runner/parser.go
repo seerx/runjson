@@ -196,6 +196,6 @@ func checkOutArguments(svc *JSONRunner, referenceMap map[string]int, objMap map[
 		return nil, false, fmt.Errorf("JSONRunner function invalid type: %s -> %s", err, funcLoc)
 	} else {
 		//decReferenceCount(referenceMap, info)
-		return outObj, reflect.TypeOf(o).Kind() == reflect.Slice, nil
+		return outObj, o.Kind() == reflect.Slice, nil
 	}
 }
