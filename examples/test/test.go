@@ -38,18 +38,18 @@ type N struct {
 }
 
 type U struct {
-	ID   int    `json:"id" c:"desc:ID,require"`
-	Name string `json:"name" c:"desc:名称"`
+	ID   int    `json:"id" rj:"desc:ID,require"`
+	Name string `json:"name" rj:"desc:名称"`
 
-	US []*U `json:"us" c:"desc:yes,deprecated"`
+	US []*U `json:"us" rj:"desc:yes,deprecated"`
 	Ni N    `json:"ni"`
 }
 
 type Response struct {
-	Val   string   `json:"val" c:"desc:123,deprecated"`
-	Key   string   `json:"key" c:"desc:键,require"`
-	Items []string `json:"items" c:"desc:数组"`
-	UAry  []*U     `json:"uAry" c:"desc:U数组"`
+	Val   string   `json:"val" rj:"desc:123,deprecated"`
+	Key   string   `json:"key" rj:"desc:键,require"`
+	Items []string `json:"items" rj:"desc:数组"`
+	UAry  []*U     `json:"uAry" rj:"desc:U数组"`
 	//Error error    `json:"error"`
 }
 
@@ -58,10 +58,10 @@ type ReqID struct {
 }
 
 type Req struct {
-	A    string   `json:"a,omitempty" c:"desc:测试A,require,limit:10<$v"`
-	B    *string  `json:"b" c:"desc:测试B ptr"`
-	Req  ReqID    `json:"req" c:"desc:测试结构"`
-	Reqs []*ReqID `json:"reqs" c:"desc:啊哈"`
+	A    string   `json:"a,omitempty" rj:"desc:测试A,require,limit:10<$v"`
+	B    *string  `json:"b" rj:"desc:测试B ptr"`
+	Req  ReqID    `json:"req" rj:"desc:测试结构"`
+	Reqs []*ReqID `json:"reqs" rj:"desc:啊哈"`
 }
 
 func (a *ApiTest) Test1Info() string {

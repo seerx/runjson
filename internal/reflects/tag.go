@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	TAG     = "c"
+	TAG     = "rj"
 	tagDesc = "desc"
 	//tagPrefix       = "prefix"
 	tagLimit        = "limit"
