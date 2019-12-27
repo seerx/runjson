@@ -23,11 +23,11 @@ import (
 )
 
 type (
-	BeforeRun func(intf.Requests)
-	AfterRun  func(intf.Requests, intf.Results)
+	BeforeRun func(*context.Context, intf.Requests)
+	AfterRun  func(*context.Context, intf.Requests, intf.Results)
 
-	BeforeExecute func(item *intf.Request)
-	AfterExecute  func(item *intf.Request, result *intf.ResponseItem, results intf.Results)
+	BeforeExecute func(ctx *context.Context, item *intf.Request)
+	AfterExecute  func(ctx *context.Context, item *intf.Request, result *intf.ResponseItem, results intf.Results)
 )
 
 // Runner 结构体
@@ -169,7 +169,7 @@ func (r *Runner) doRun(ctx *context.Context, data string, returnFn func(intf.Res
 	}
 
 	if r.beforeRun != nil {
-		r.beforeRun(reqs)
+		r.beforeRun(ctx, reqs)
 	}
 
 	response := intf.Response{}
@@ -181,7 +181,7 @@ func (r *Runner) doRun(ctx *context.Context, data string, returnFn func(intf.Res
 	for _, request := range reqs {
 		// before
 		if r.beforeExecute != nil {
-			r.beforeExecute(request)
+			r.beforeExecute(ctx, request)
 		}
 		var result *intf.ResponseItem
 		r.execute(ctx, request, rslt, func(key string, rsp *intf.ResponseItem) {
@@ -194,14 +194,14 @@ func (r *Runner) doRun(ctx *context.Context, data string, returnFn func(intf.Res
 		})
 		// after
 		if r.afterExecute != nil {
-			r.afterExecute(request, result, rslt)
+			r.afterExecute(ctx, request, result, rslt)
 		}
 
 		//r.log.Debug("Call: %s", request.Service)
 	}
 
 	if r.afterRun != nil {
-		r.afterRun(reqs, rslt)
+		r.afterRun(ctx, reqs, rslt)
 	}
 
 	returnFn(response, nil)
