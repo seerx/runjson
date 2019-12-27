@@ -13,6 +13,8 @@ type ServiceInfo struct {
 	Description    string `json:"description,omitempty"`
 	Deprecated     bool   `json:"deprecated"`
 	InputObjectID  string `json:"inputObjectId,omitempty"`
+	InputIsArray   bool   `json:"inputIsArray"`
 	OutputObjectID string `json:"outputObjectId,omitempty"`
+	OutputIsArray  bool   `json:"outputIsArray"`
 	History        []*CR  `json:"history,omitempty"`
 }

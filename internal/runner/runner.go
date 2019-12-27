@@ -97,11 +97,13 @@ type JSONRunner struct {
 
 	requestObjectMgr *request.RequestObjectManager
 
-	returnType      reflect.Type                // 函数有效返回值 Type
-	ReturnObjectID  string                      // 返回类型 ID
-	requestObject   *request.RequestObjectField // 函数接收值的 Type
-	RequestObjectID string
-	inputArgs       []arguments.Argument // 函数输入参数表
+	returnType           reflect.Type                // 函数有效返回值 Type
+	ReturnObjectID       string                      // 返回类型 ID
+	ReturnObjectIsArray  bool                        // 返回的数据是否数组
+	requestObject        *request.RequestObjectField // 函数接收值的 Type
+	RequestObjectID      string
+	RequestObjectIsArray bool
+	inputArgs            []arguments.Argument // 函数输入参数表
 
 	loaderStruct *arguments.LoaderScheme
 }

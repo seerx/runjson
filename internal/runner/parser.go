@@ -42,11 +42,13 @@ func TryParserAsService(loader reflect.Type,
 	// 解析输出参数
 	var outInfo *graph.ObjectInfo
 	var err error
-	if outInfo, err = checkOutArguments(svc, rMap, info.Response, log); err != nil {
+	var array bool
+	if outInfo, array, err = checkOutArguments(svc, rMap, info.Response, log); err != nil {
 		objtraver.DecReferenceCount(rMap, info.Response)
 		return nil, err
 	}
 	svc.ReturnObjectID = outInfo.ID
+	svc.RequestObjectIsArray = array
 
 	// 解析输入参数
 	var inInfo *graph.ObjectInfo
@@ -61,6 +63,7 @@ func TryParserAsService(loader reflect.Type,
 	}
 	if inReq != nil {
 		svc.requestObject = inReq
+		svc.RequestObjectIsArray = inReq.Slice
 	}
 	if inInfo != nil {
 		svc.RequestObjectID = inInfo.ID
@@ -175,24 +178,24 @@ func checkInArguments(svc *JSONRunner,
 }
 
 // 检查函数的返回参数
-func checkOutArguments(svc *JSONRunner, referenceMap map[string]int, objMap map[string]*graph.ObjectInfo, log logrus.Logger) (*graph.ObjectInfo, error) {
+func checkOutArguments(svc *JSONRunner, referenceMap map[string]int, objMap map[string]*graph.ObjectInfo, log logrus.Logger) (*graph.ObjectInfo, bool, error) {
 	funcLoc := svc.location.String()
 	oc := svc.funcType.NumOut()
 	if oc != 2 {
 		log.Debug("JSONRunner function Must has return 2 values:", funcLoc)
-		return nil, fmt.Errorf("JSONRunner function Must has return 2 values: %s", funcLoc)
+		return nil, false, fmt.Errorf("JSONRunner function Must has return 2 values: %s", funcLoc)
 	}
 
 	o := svc.funcType.Out(1)
 	if !types.IsError(o) {
-		return nil, fmt.Errorf("JSONRunner function's second return argument must be type of error: %s", funcLoc)
+		return nil, false, fmt.Errorf("JSONRunner function's second return argument must be type of error: %s", funcLoc)
 	}
 	//rMap := map[string]int{}
 	o = svc.funcType.Out(0)
 	if outObj, _, err := objtraver.Traversal(svc.location, o, referenceMap, objMap, nil); err != nil {
-		return nil, fmt.Errorf("JSONRunner function invalid type: %s -> %s", err, funcLoc)
+		return nil, false, fmt.Errorf("JSONRunner function invalid type: %s -> %s", err, funcLoc)
 	} else {
 		//decReferenceCount(referenceMap, info)
-		return outObj, nil
+		return outObj, reflect.TypeOf(o).Kind() == reflect.Slice, nil
 	}
 }
