@@ -193,6 +193,7 @@ func checkOutArguments(svc *JSONRunner, referenceMap map[string]int, objMap map[
 	//rMap := map[string]int{}
 	o = svc.funcType.Out(0)
 	if outObj, _, err := objtraver.Traversal(svc.location, o, referenceMap, objMap, nil); err != nil {
+		//objtraver.DecReferenceCount(referenceMap, outObj)
 		return nil, false, fmt.Errorf("JSONRunner function invalid type: %s -> %s", err, funcLoc)
 	} else {
 		//decReferenceCount(referenceMap, info)
