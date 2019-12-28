@@ -48,7 +48,7 @@ func TryParserAsService(loader reflect.Type,
 		return nil, err
 	}
 	svc.ReturnObjectID = outInfo.ID
-	svc.RequestObjectIsArray = array
+	svc.ReturnObjectIsArray = array
 
 	// 解析输入参数
 	var inInfo *graph.ObjectInfo
