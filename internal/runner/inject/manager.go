@@ -29,9 +29,18 @@ func (im *InjectorManager) Find(typ reflect.Type) *Injector {
 	return nil
 }
 
-// Register 注册注入函数
 func (im *InjectorManager) Register(fn interface{}) error {
-	loc := reflects.ParseFuncLocation(fn)
+	return im.RegisterWithProxy(fn, nil, nil)
+}
+
+// RegisterWithProxy 注册注入函数
+func (im *InjectorManager) RegisterWithProxy(fn interface{}, injectType reflect.Type, beenProxyFn interface{}) error {
+	var loc *reflects.Location
+	if beenProxyFn != nil && injectType != nil {
+		loc = reflects.ParseFuncLocation(beenProxyFn)
+	} else {
+		loc = reflects.ParseFuncLocation(fn)
+	}
 
 	typ := reflect.TypeOf(fn)
 	if typ.Kind() != reflect.Func {
@@ -45,15 +54,24 @@ func (im *InjectorManager) Register(fn interface{}) error {
 	}
 
 	// 第一个返回值，必须是接口或者指向结构体的指针
-	o1 := typ.Out(0)
-	o1Ptr := o1.Kind() == reflect.Ptr
-	keyType := o1
-	if o1Ptr {
-		keyType = o1.Elem()
-	}
+	if injectType == nil {
+		// ru如果没有指定类型
+		o1 := typ.Out(0)
+		o1Ptr := o1.Kind() == reflect.Ptr
 
-	if o1.Kind() != reflect.Interface && ((!o1Ptr) || keyType.Kind() != reflect.Struct) {
-		return fmt.Errorf("Injector func first return value must be interface or a poniter of struct [%s]", loc.String())
+		injectType = o1
+		if o1Ptr {
+			injectType = o1.Elem()
+		}
+
+		if o1.Kind() != reflect.Interface && ((!o1Ptr) || injectType.Kind() != reflect.Struct) {
+			return fmt.Errorf("Injector func first return value must be interface or a poniter of struct [%s]", loc.String())
+		}
+	} else {
+		// 指定了注入类型
+		if injectType.Kind() == reflect.Ptr {
+			injectType = injectType.Elem()
+		}
 	}
 
 	//o1Typ := reflects.ParseType(loc, o1)
@@ -69,14 +87,14 @@ func (im *InjectorManager) Register(fn interface{}) error {
 	}
 
 	// 查找是否已经存在
-	old, exists := im.injectors[keyType]
+	old, exists := im.injectors[injectType]
 	if exists {
 		if old.Location.Equals(loc) {
 			// 重复注册
 			return nil
 		}
 		// 已经存在
-		return fmt.Errorf("Inject type [%s] is Registered by func [%s]", o1.Name(), old.Location.String())
+		return fmt.Errorf("Inject type [%s] is Registered by func [%s]", injectType.Name(), old.Location.String())
 	}
 
 	// 判断输入参数
@@ -90,11 +108,11 @@ func (im *InjectorManager) Register(fn interface{}) error {
 	}
 
 	// 注册
-	im.injectors[keyType] = &Injector{
-		Type:                  keyType,
+	im.injectors[injectType] = &Injector{
+		Type:                  injectType,
 		Func:                  reflect.ValueOf(fn),
 		Location:              loc,
-		ReturnTypeIsInterface: o1.Kind() == reflect.Interface,
+		ReturnTypeIsInterface: injectType.Kind() == reflect.Interface,
 	}
 
 	return nil

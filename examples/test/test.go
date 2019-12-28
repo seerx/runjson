@@ -144,11 +144,11 @@ func main() {
 	}
 	ch.Register(&ApiTest{}, &tt.TT{})
 
-	ch.BeforeExecute(func(item *intf.Request) {
-		fmt.Println("before:", item.Service)
-	}).AfterExecute(func(item *intf.Request, result *intf.ResponseItem, results intf.Results) {
-		fmt.Println("after:", item.Service)
-	})
+	//ch.BeforeExecute(func(item *intf.Request) {
+	//	fmt.Println("before:", item.Service)
+	//}).AfterExecute(func(item *intf.Request, result *intf.ResponseItem, results intf.Results) {
+	//	fmt.Println("after:", item.Service)
+	//})
 
 	err := ch.Engage()
 
