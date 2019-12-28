@@ -14,7 +14,7 @@ import (
 
 	"github.com/seerx/runjson/pkg/context"
 
-	"github.com/seerx/runjson/pkg/intf"
+	"github.com/seerx/runjson/pkg/rj"
 )
 
 type ApiTest struct {
@@ -23,13 +23,13 @@ type ApiTest struct {
 	D  float32   `json:"d"`
 	T  time.Time `json:"t"`
 
-	R   intf.Require
+	R   rj.Require
 	I1  Cls
 	I2  *Cls
-	Rsp intf.Results
+	Rsp rj.Results
 }
 
-func (a ApiTest) Group() *intf.Group {
+func (a ApiTest) Group() *rj.Group {
 	return &GA
 }
 
@@ -103,7 +103,7 @@ func (a *ApiTest) Test2(abb string) (*Response, error) {
 	}, nil
 }
 
-func (a *ApiTest) Test2Info() intf.FuncInfo {
+func (a *ApiTest) Test2Info() rj.FuncInfo {
 	//val, err := a.Rsp.Get((&ApiTest{}).Test1)
 	//if err != nil {
 	//	fmt.Println(err)
@@ -111,7 +111,7 @@ func (a *ApiTest) Test2Info() intf.FuncInfo {
 	//	fmt.Println(val)
 	//}
 
-	return intf.FuncInfo{
+	return rj.FuncInfo{
 		Description: `测试函数 222`,
 		History: []*graph.CR{
 			{"2019/12/26", "hyb", "创建"},
@@ -144,9 +144,9 @@ func main() {
 	}
 	ch.Register(&ApiTest{}, &tt.TT{})
 
-	//ch.BeforeExecute(func(item *intf.Request) {
+	//ch.BeforeExecute(func(item *rj.Request) {
 	//	fmt.Println("before:", item.Service)
-	//}).AfterExecute(func(item *intf.Request, result *intf.ResponseItem, results intf.Results) {
+	//}).AfterExecute(func(item *rj.Request, result *rj.ResponseItem, results rj.Results) {
 	//	fmt.Println("after:", item.Service)
 	//})
 
@@ -170,12 +170,12 @@ func main() {
 		Reqs: []*ReqID{{ID: 11}, {ID: 12}},
 	}
 
-	reqs := intf.Requests{}
-	reqs = append(reqs, &intf.Request{
+	reqs := rj.Requests{}
+	reqs = append(reqs, &rj.Request{
 		Service: "test.Test21",
 		Args:    B,
 	})
-	reqs = append(reqs, &intf.Request{
+	reqs = append(reqs, &rj.Request{
 		Service: "test.Test1",
 		Args:    req,
 	})

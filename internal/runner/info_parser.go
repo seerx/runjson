@@ -5,10 +5,10 @@ import (
 
 	"github.com/seerx/runjson/internal/types"
 
-	"github.com/seerx/runjson/pkg/intf"
+	"github.com/seerx/runjson/pkg/rj"
 )
 
-func TryToParseFuncInfo(loader interface{}, loaderType reflect.Type, funcName string) *intf.FuncInfo {
+func TryToParseFuncInfo(loader interface{}, loaderType reflect.Type, funcName string) *rj.FuncInfo {
 	m, exists := loaderType.MethodByName(funcName + "Info")
 	if !exists {
 		return nil
@@ -25,18 +25,18 @@ func TryToParseFuncInfo(loader interface{}, loaderType reflect.Type, funcName st
 	//if outType.Kind() == reflect.String {
 	//	// 只有说明信息
 	//	if desc, ok := out[0].Interface().(string); ok {
-	//		return &intf.FuncInfo{
+	//		return &rj.FuncInfo{
 	//			Description: desc,
 	//		}
 	//	}
 	//} else
 	if yes, ptr := types.IsFuncInfo(outType); yes {
 		if ptr {
-			if info, ok := out[0].Interface().(*intf.FuncInfo); ok {
+			if info, ok := out[0].Interface().(*rj.FuncInfo); ok {
 				return info
 			}
 		} else {
-			if info, ok := out[0].Interface().(intf.FuncInfo); ok {
+			if info, ok := out[0].Interface().(rj.FuncInfo); ok {
 				return &info
 			}
 		}

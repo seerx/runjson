@@ -3,15 +3,15 @@ package types
 import (
 	"reflect"
 
-	"github.com/seerx/runjson/pkg/intf"
+	"github.com/seerx/runjson/pkg/rj"
 )
 
 var (
 	errorType       = reflect.TypeOf((*error)(nil)).Elem()
-	requireType     = reflect.TypeOf((*intf.Require)(nil)).Elem()
-	funcInfoType    = reflect.TypeOf((*intf.FuncInfo)(nil)).Elem()
+	requireType     = reflect.TypeOf((*rj.Require)(nil)).Elem()
+	funcInfoType    = reflect.TypeOf((*rj.FuncInfo)(nil)).Elem()
 	injectParamType = reflect.TypeOf((*map[string]interface{})(nil)).Elem()
-	resultsType     = reflect.TypeOf((*intf.Results)(nil)).Elem()
+	resultsType     = reflect.TypeOf((*rj.Results)(nil)).Elem()
 )
 
 func IsInjectParam(typ reflect.Type) bool {

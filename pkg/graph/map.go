@@ -7,7 +7,7 @@ type ApiInfo struct {
 	Request  map[string]*ObjectInfo `json:"request"`
 }
 
-// GetGroup 根据 intf.Group 获取 map 中的组信息
+// GetGroup 根据 rj.Group 获取 map 中的组信息
 func (mi *ApiInfo) GetGroup(grpName, grpInfo string) *GroupInfo {
 	for _, group := range mi.Groups {
 		if group.Name == grpName {

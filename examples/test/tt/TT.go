@@ -1,14 +1,14 @@
 package tt
 
 import (
-	"github.com/seerx/runjson/pkg/intf"
+	"github.com/seerx/runjson/pkg/rj"
 )
 
 type TT struct {
 }
 
-func (t TT) Group() *intf.Group {
-	return &intf.Group{
+func (t TT) Group() *rj.Group {
+	return &rj.Group{
 		Name:        "QQ",
 		Description: "123",
 	}

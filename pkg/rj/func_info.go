@@ -1,4 +1,4 @@
-package intf
+package rj
 
 import "github.com/seerx/runjson/pkg/graph"
 

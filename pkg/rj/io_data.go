@@ -1,4 +1,4 @@
-package intf
+package rj
 
 // ResponseItem 返回项
 type ResponseItem struct {

@@ -1,4 +1,4 @@
-package intf
+package rj
 
 const GROUP_FUNC = "Group"
 

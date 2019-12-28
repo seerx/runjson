@@ -3,7 +3,7 @@ package arguments
 import (
 	"reflect"
 
-	"github.com/seerx/runjson/pkg/intf"
+	"github.com/seerx/runjson/pkg/rj"
 )
 
 // ArgumentContext 参数上下文
@@ -11,8 +11,8 @@ type ArgumentContext struct {
 	Param           map[string]interface{}
 	InjectValueMap  map[reflect.Type]reflect.Value
 	RequestArgument *reflect.Value
-	Requirement     intf.Require
-	Results         intf.Results
+	Requirement     rj.Require
+	Results         rj.Results
 }
 
 // 参数接口

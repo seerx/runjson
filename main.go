@@ -17,17 +17,17 @@ import (
 
 	"github.com/seerx/runjson/internal/runner/inject"
 
-	"github.com/seerx/runjson/pkg/intf"
+	"github.com/seerx/runjson/pkg/rj"
 
 	"github.com/sirupsen/logrus"
 )
 
 type (
-	BeforeRun func(*context.Context, intf.Requests)
-	AfterRun  func(*context.Context, intf.Requests, intf.Results)
+	BeforeRun func(*context.Context, rj.Requests)
+	AfterRun  func(*context.Context, rj.Requests, rj.Results)
 
-	BeforeExecute func(ctx *context.Context, item *intf.Request)
-	AfterExecute  func(ctx *context.Context, item *intf.Request, result *intf.ResponseItem, results intf.Results)
+	BeforeExecute func(ctx *context.Context, item *rj.Request)
+	AfterExecute  func(ctx *context.Context, item *rj.Request, result *rj.ResponseItem, results rj.Results)
 )
 
 // Runner 结构体
@@ -39,7 +39,7 @@ type Runner struct {
 	// 日志
 	log logrus.Logger
 	// 注册的信息
-	loaders []intf.Loader
+	loaders []rj.Loader
 	// 注入管理
 	injector *inject.InjectorManager
 	// 请求参数管理
@@ -70,11 +70,11 @@ func (r *Runner) AfterExecute(fn AfterExecute) *Runner {
 }
 
 type results struct {
-	response intf.Response
+	response rj.Response
 	run      *Runner
 }
 
-func (r *results) Get(method interface{}) ([]*intf.ResponseItem, error) {
+func (r *results) Get(method interface{}) ([]*rj.ResponseItem, error) {
 	if jr, err := r.run.service.Find(method); err != nil {
 		return nil, err
 	} else {
@@ -106,7 +106,7 @@ func New() *Runner {
 }
 
 // Register 注册功能
-func (r *Runner) Register(loaders ...intf.Loader) {
+func (r *Runner) Register(loaders ...rj.Loader) {
 	r.loaders = append(r.loaders, loaders...)
 }
 
@@ -120,33 +120,33 @@ func (r *Runner) Inject(fns ...interface{}) error {
 	return nil
 }
 
-func (r *Runner) execute(ctx *context.Context, request *intf.Request, rslt *results, onResponse func(key string, rsp *intf.ResponseItem)) {
+func (r *Runner) execute(ctx *context.Context, request *rj.Request, rslt *results, onResponse func(key string, rsp *rj.ResponseItem)) {
 	defer func() {
 		if err := recover(); err != nil {
-			onResponse(request.Service, &intf.ResponseItem{
+			onResponse(request.Service, &rj.ResponseItem{
 				Error: err.(string),
 				Data:  nil,
 			})
 		}
 	}()
 	//resKey := request.Service
-	var rsp *intf.ResponseItem
+	var rsp *rj.ResponseItem
 	svc := r.service.Get(request.Service)
 	if svc != nil {
 		res, err := svc.Run(ctx, request.Args, rslt)
 
 		if err != nil {
-			rsp = &intf.ResponseItem{
+			rsp = &rj.ResponseItem{
 				Error: err.Error(),
 			}
 		} else {
-			rsp = &intf.ResponseItem{
+			rsp = &rj.ResponseItem{
 				Error: "",
 				Data:  res,
 			}
 		}
 	} else {
-		rsp = &intf.ResponseItem{
+		rsp = &rj.ResponseItem{
 			Error: "No runner named " + request.Service,
 		}
 	}
@@ -154,14 +154,14 @@ func (r *Runner) execute(ctx *context.Context, request *intf.Request, rslt *resu
 	onResponse(request.Service, rsp)
 }
 
-func (r *Runner) doRun(ctx *context.Context, data string, returnFn func(intf.Response, error)) {
+func (r *Runner) doRun(ctx *context.Context, data string, returnFn func(rj.Response, error)) {
 	defer func() {
 		if err := recover(); err != nil {
 			returnFn(nil, errors.New(err.(string)))
 		}
 	}()
 	//r.log.Debug("Requests: \n%s", data)
-	var reqs = intf.Requests{}
+	var reqs = rj.Requests{}
 	err := json.Unmarshal([]byte(data), &reqs)
 	if err != nil {
 		r.log.WithError(err).Error("json.Unmarshal")
@@ -172,7 +172,7 @@ func (r *Runner) doRun(ctx *context.Context, data string, returnFn func(intf.Res
 		r.beforeRun(ctx, reqs)
 	}
 
-	response := intf.Response{}
+	response := rj.Response{}
 	rslt := &results{
 		response: response,
 		run:      r,
@@ -183,12 +183,12 @@ func (r *Runner) doRun(ctx *context.Context, data string, returnFn func(intf.Res
 		if r.beforeExecute != nil {
 			r.beforeExecute(ctx, request)
 		}
-		var result *intf.ResponseItem
-		r.execute(ctx, request, rslt, func(key string, rsp *intf.ResponseItem) {
+		var result *rj.ResponseItem
+		r.execute(ctx, request, rslt, func(key string, rsp *rj.ResponseItem) {
 			if resAry, exists := response[request.Service]; exists {
 				response[key] = append(resAry, rsp)
 			} else {
-				response[key] = []*intf.ResponseItem{rsp}
+				response[key] = []*rj.ResponseItem{rsp}
 			}
 			result = rsp
 		})
@@ -208,15 +208,15 @@ func (r *Runner) doRun(ctx *context.Context, data string, returnFn func(intf.Res
 }
 
 // Run 执行
-func (r *Runner) Run(ctx *context.Context, data string) (intf.Response, error) {
-	var rsp intf.Response
+func (r *Runner) Run(ctx *context.Context, data string) (rj.Response, error) {
+	var rsp rj.Response
 	var err error
-	r.doRun(ctx, data, func(responses intf.Response, e error) {
+	r.doRun(ctx, data, func(responses rj.Response, e error) {
 		rsp = responses
 		err = e
 	})
 	return rsp, err
-	//var reqs = intf.Requests{}
+	//var reqs = rj.Requests{}
 	//err := json.Unmarshal([]byte(data), &reqs)
 	//if err != nil {
 	//	r.log.WithError(err).Error("json.Unmarshal")
@@ -227,7 +227,7 @@ func (r *Runner) Run(ctx *context.Context, data string) (intf.Response, error) {
 	//	r.beforeRun(reqs)
 	//}
 	//
-	//response := intf.Response{}
+	//response := rj.Response{}
 	//rslt := &results{
 	//	response: response,
 	//	run:      r,
@@ -238,12 +238,12 @@ func (r *Runner) Run(ctx *context.Context, data string) (intf.Response, error) {
 	//	if r.beforeExecute != nil {
 	//		r.beforeExecute(request)
 	//	}
-	//	var result *intf.ResponseItem
-	//	r.execute(ctx, request, rslt, func(key string, rsp *intf.ResponseItem) {
+	//	var result *rj.ResponseItem
+	//	r.execute(ctx, request, rslt, func(key string, rsp *rj.ResponseItem) {
 	//		if resAry, exists := response[request.Service]; exists {
 	//			response[key] = append(resAry, rsp)
 	//		} else {
-	//			response[key] = []*intf.ResponseItem{rsp}
+	//			response[key] = []*rj.ResponseItem{rsp}
 	//		}
 	//		result = rsp
 	//	})
@@ -285,7 +285,7 @@ func (r *Runner) Engage() error {
 		for n := 0; n < nm; n++ {
 			method := loaderTyp.Method(n)
 
-			if intf.GROUP_FUNC == method.Name {
+			if rj.GROUP_FUNC == method.Name {
 				// 跳过 Loader 接口的函数
 				continue
 			}

@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/seerx/runjson/pkg/intf"
+	"github.com/seerx/runjson/pkg/rj"
 )
 
-var GA = intf.Group{
+var GA = rj.Group{
 	Name:        "test",
 	Description: "测试组",
 }

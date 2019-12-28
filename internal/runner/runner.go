@@ -7,7 +7,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/seerx/runjson/pkg/intf"
+	"github.com/seerx/runjson/pkg/rj"
 
 	"github.com/seerx/runjson/internal/runner/arguments"
 	"github.com/seerx/runjson/internal/runner/inject"
@@ -108,7 +108,7 @@ type JSONRunner struct {
 	loaderStruct *arguments.LoaderScheme
 }
 
-func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, results intf.Results) (interface{}, error) {
+func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, results rj.Results) (interface{}, error) {
 	var arg *reflect.Value
 	fm := &fieldmap.FieldMap{}
 	if s.requestObject != nil {
