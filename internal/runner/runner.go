@@ -128,10 +128,20 @@ func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, results rj.
 		Results:         results,
 	}
 
+	clearTasks := []rj.OnComplete{}
+	defer func() {
+		for _, task := range clearTasks {
+			task.Clear()
+		}
+	}()
+
 	args := make([]reflect.Value, len(s.inputArgs), len(s.inputArgs))
 	for n, a := range s.inputArgs {
 		argVal := a.CreateValue(argContext)
 		// 判断是否实现 io.Closer 接口
+		if task := asClearTask(argVal); task != nil {
+			clearTasks = append(clearTasks, task)
+		}
 		args[n] = argVal
 	}
 
@@ -154,4 +164,17 @@ func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, results rj.
 	}
 
 	return out, err
+}
+
+func asClearTask(value reflect.Value) rj.OnComplete {
+	val := value.Interface()
+	if val == nil {
+		return nil
+	}
+
+	task, ok := val.(rj.OnComplete)
+	if ok {
+		return task
+	}
+	return nil
 }
