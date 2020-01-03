@@ -154,19 +154,13 @@ func (r *Runner) execute(ctx *context.Context, request *rj.Request, rslt *result
 	onResponse(request.Service, rsp)
 }
 
-func (r *Runner) doRun(ctx *context.Context, data string, returnFn func(rj.Response, error)) {
+func (r *Runner) doRun(ctx *context.Context, reqs rj.Requests, returnFn func(rj.Response, error)) {
 	defer func() {
 		if err := recover(); err != nil {
 			returnFn(nil, errors.New(err.(string)))
 		}
 	}()
 	//r.log.Debug("Requests: \n%s", data)
-	var reqs = rj.Requests{}
-	err := json.Unmarshal([]byte(data), &reqs)
-	if err != nil {
-		r.log.WithError(err).Error("json.Unmarshal")
-		returnFn(nil, err)
-	}
 
 	if r.beforeRun != nil {
 		r.beforeRun(ctx, reqs)
@@ -207,59 +201,32 @@ func (r *Runner) doRun(ctx *context.Context, data string, returnFn func(rj.Respo
 	returnFn(response, nil)
 }
 
-// Run 执行
-func (r *Runner) Run(ctx *context.Context, data string) (rj.Response, error) {
+// RunString 运行字符串形式的参数
+func (r *Runner) RunString(ctx *context.Context, data string) (rj.Response, error) {
 	var rsp rj.Response
 	var err error
-	r.doRun(ctx, data, func(responses rj.Response, e error) {
+	var reqs = rj.Requests{}
+	err = json.Unmarshal([]byte(data), &reqs)
+	if err != nil {
+		r.log.WithError(err).Error("json.Unmarshal")
+		return nil, err
+	}
+	r.doRun(ctx, reqs, func(responses rj.Response, e error) {
 		rsp = responses
 		err = e
 	})
 	return rsp, err
-	//var reqs = rj.Requests{}
-	//err := json.Unmarshal([]byte(data), &reqs)
-	//if err != nil {
-	//	r.log.WithError(err).Error("json.Unmarshal")
-	//	return nil, err
-	//}
-	//
-	//if r.beforeRun != nil {
-	//	r.beforeRun(reqs)
-	//}
-	//
-	//response := rj.Response{}
-	//rslt := &results{
-	//	response: response,
-	//	run:      r,
-	//}
-	//
-	//for _, request := range reqs {
-	//	// before
-	//	if r.beforeExecute != nil {
-	//		r.beforeExecute(request)
-	//	}
-	//	var result *rj.ResponseItem
-	//	r.execute(ctx, request, rslt, func(key string, rsp *rj.ResponseItem) {
-	//		if resAry, exists := response[request.Service]; exists {
-	//			response[key] = append(resAry, rsp)
-	//		} else {
-	//			response[key] = []*rj.ResponseItem{rsp}
-	//		}
-	//		result = rsp
-	//	})
-	//	// after
-	//	if r.afterExecute != nil {
-	//		r.afterExecute(request, result, rslt)
-	//	}
-	//
-	//	//r.log.Debug("Call: %s", request.Service)
-	//}
-	//
-	//if r.afterRun != nil {
-	//	r.afterRun(reqs, rslt)
-	//}
-	//
-	//return response, nil
+}
+
+// RunRequests 运行 rj.Requests 形式的参数
+func (r *Runner) RunRequests(ctx *context.Context, reqs rj.Requests) (rj.Response, error) {
+	var rsp rj.Response
+	var err error
+	r.doRun(ctx, reqs, func(responses rj.Response, e error) {
+		rsp = responses
+		err = e
+	})
+	return rsp, err
 }
 
 // Engage 解析功能，以启动功能 from Star Trek
