@@ -52,27 +52,42 @@ func (im *InjectorManager) RegisterWithProxy(fn interface{}, injectType reflect.
 		// 返回参数必须是 2 个
 		return fmt.Errorf("Injector func must return 2 args [%s]", loc.String())
 	}
-
-	// 第一个返回值，必须是接口或者指向结构体的指针
 	if injectType == nil {
-		// ru如果没有指定类型
-		o1 := typ.Out(0)
-		o1Ptr := o1.Kind() == reflect.Ptr
-
-		injectType = o1
-		if o1Ptr {
-			injectType = o1.Elem()
-		}
-
-		if o1.Kind() != reflect.Interface && ((!o1Ptr) || injectType.Kind() != reflect.Struct) {
-			return fmt.Errorf("Injector func first return value must be interface or a poniter of struct [%s]", loc.String())
-		}
-	} else {
-		// 指定了注入类型
-		if injectType.Kind() == reflect.Ptr {
-			injectType = injectType.Elem()
-		}
+		// 如果没有指定 injectType ，使用注入函数的第一个返回值作为 injectType
+		injectType = typ.Out(0)
 	}
+
+	// 判断 injectType 是否合乎规定
+	injectTypeIsPtr := injectType.Kind() == reflect.Ptr
+	if injectTypeIsPtr {
+		// 是指针类型，获取实际类型
+		injectType = injectType.Elem()
+	}
+	if injectType.Kind() != reflect.Interface && ((!injectTypeIsPtr) || injectType.Kind() != reflect.Struct) {
+		// 如果注入类型不是接口，且不是指向结构的指针，则不支持注入
+		return fmt.Errorf("Injector func first return value must be interface or a poniter of struct [%s]", loc.String())
+	}
+
+	// // 第一个返回值，必须是接口或者指向结构体的指针
+	// if injectType == nil {
+	// 	// ru如果没有指定类型
+	// 	o1 := typ.Out(0)
+	// 	o1Ptr := o1.Kind() == reflect.Ptr
+
+	// 	injectType = o1
+	// 	if o1Ptr {
+	// 		injectType = o1.Elem()
+	// 	}
+
+	// 	if o1.Kind() != reflect.Interface && ((!o1Ptr) || injectType.Kind() != reflect.Struct) {
+	// 		return fmt.Errorf("Injector func first return value must be interface or a poniter of struct [%s]", loc.String())
+	// 	}
+	// } else {
+	// 	// 指定了注入类型
+	// 	if injectType.Kind() == reflect.Ptr {
+	// 		injectType = injectType.Elem()
+	// 	}
+	// }
 
 	//o1Typ := reflects.ParseType(loc, o1)
 	//if (o1.Kind() != reflect.Interface) && (o1.Kind() != reflect.Struct) {

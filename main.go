@@ -120,6 +120,11 @@ func (r *Runner) Inject(fns ...interface{}) error {
 	return nil
 }
 
+// InjectProxy 注册代理注入
+func (r *Runner) InjectProxy(fn interface{}, injectType reflect.Type, proxyFn interface{}) error {
+	return r.injector.RegisterWithProxy(fn, injectType, proxyFn)
+}
+
 func (r *Runner) execute(ctx *context.Context, request *rj.Request, rslt *results, onResponse func(key string, rsp *rj.ResponseItem)) {
 	defer func() {
 		if err := recover(); err != nil {
