@@ -183,7 +183,7 @@ func main() {
 	data, _ := json.Marshal(reqs)
 	str := string(data)
 
-	rsp, err := ch.Run(&context.Context{}, str)
+	rsp, err := ch.RunString(&context.Context{}, str)
 	if err != nil {
 		panic(err)
 	}
