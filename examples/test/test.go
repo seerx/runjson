@@ -64,8 +64,13 @@ type Req struct {
 	Reqs []*ReqID `json:"reqs" rj:"desc:啊哈"`
 }
 
-func (a *ApiTest) Test1Info() string {
-	return `测试函数 1`
+func (a *ApiTest) Test1Info() *rj.FuncInfo {
+	return &rj.FuncInfo{
+		Description:    "测试函数1",
+		Deprecated:     false,
+		InputIsRequire: true,
+		History:        nil,
+	}
 }
 
 func (a ApiTest) Test1(aa Req, cls Cls) ([]*Response, error) {
@@ -183,16 +188,16 @@ func main() {
 
 	reqs := rj.Requests{}
 	reqs = append(reqs, &rj.Request{
-		Service: "test.Test21",
+		Service: "test.Test2",
 		Args:    B,
 	})
 	reqs = append(reqs, &rj.Request{
 		Service: "test.Test1",
-		Args:    req,
+		Args:    nil,
 	})
 	reqs = append(reqs, &rj.Request{
 		Service: "test.Test3",
-		Args:    nil,
+		Args:    req,
 	})
 
 	data, _ := json.Marshal(reqs)
