@@ -192,18 +192,22 @@ func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data i
 			if err != nil {
 				return reflect.ValueOf(nil), err
 			}
-			if fd.Ptr || fd.Slice {
-				field.Set(objVal)
-			} else {
-				field.Set(objVal.Elem()) // .Elem())
+			if objVal != reflect.ValueOf(nil) {
+				if fd.Ptr || fd.Slice {
+					field.Set(objVal)
+				} else {
+					field.Set(objVal.Elem()) // .Elem())
+				}
+
+				// 添加到已发现字段，用于 reqiure 函数判断
+				//fm.Add(thisPath)
+				if thisPath == "" {
+					fm.Add(fd.Name)
+				} else {
+					fm.Add(fmt.Sprintf("%s.%s", thisPath, fd.Name))
+				}
 			}
-			// 添加到已发现字段，用于 reqiure 函数判断
-			//fm.Add(thisPath)
-			if thisPath == "" {
-				fm.Add(fd.Name)
-			} else {
-				fm.Add(fmt.Sprintf("%s.%s", thisPath, fd.Name))
-			}
+
 		} else {
 			if fd.Require {
 				// 必填字段

@@ -164,10 +164,11 @@ func main() {
 	B := "aaaaaaa"
 
 	req := &Req{
-		A:    "1230099387747474y44 d",
-		B:    &B,
-		Req:  ReqID{ID: 100},
-		Reqs: []*ReqID{{ID: 11}, {ID: 12}},
+		A:   "1230099387747474y44 d",
+		B:   &B,
+		Req: ReqID{ID: 100},
+		//Reqs: []*ReqID{{ID: 11}, {ID: 12}},
+		Reqs: nil,
 	}
 
 	reqs := rj.Requests{}
