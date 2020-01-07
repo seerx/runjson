@@ -11,6 +11,10 @@ type ArgRequest struct {
 	Arg      *request.RequestObject
 }
 
+func (a *ArgRequest) IsInject() bool {
+	return false
+}
+
 func (a *ArgRequest) CreateValue(ctx *ArgumentContext) reflect.Value {
 	if ctx.RequestArgument == nil {
 		return reflect.ValueOf(nil)

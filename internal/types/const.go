@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	NilType         = reflect.ValueOf(nil)
 	errorType       = reflect.TypeOf((*error)(nil)).Elem()
 	requireType     = reflect.TypeOf((*rj.Require)(nil)).Elem()
 	funcInfoType    = reflect.TypeOf((*rj.FuncInfo)(nil)).Elem()

@@ -27,6 +27,10 @@ type LoaderScheme struct {
 	InjectFields    []*InjectField
 }
 
+func (ls *LoaderScheme) IsInject() bool {
+	return false
+}
+
 func (ls *LoaderScheme) CreateValue(ctx *ArgumentContext) reflect.Value {
 	inst := reflect.New(ls.Type)
 	elem := inst.Elem()

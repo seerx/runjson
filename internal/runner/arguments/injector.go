@@ -12,6 +12,10 @@ type ArgInjector struct {
 	IsInterface bool
 }
 
+func (a *ArgInjector) IsInject() bool {
+	return true
+}
+
 func (a *ArgInjector) CreateValue(ctx *ArgumentContext) reflect.Value {
 	var val reflect.Value
 	var exists bool

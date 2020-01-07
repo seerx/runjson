@@ -18,6 +18,7 @@ type ArgumentContext struct {
 // 参数接口
 type Argument interface {
 	CreateValue(ctx *ArgumentContext) reflect.Value
+	IsInject() bool
 	//AsClearTask() *rj.OnComplete
 	//IsInjectInterface() bool
 }

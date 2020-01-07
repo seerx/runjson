@@ -103,6 +103,16 @@ func (a *ApiTest) Test2(abb string) (*Response, error) {
 	}, nil
 }
 
+func (a *ApiTest) Test3() (*Response, error) {
+	return &Response{
+		Val:   "123",
+		Key:   "abb",
+		Items: nil,
+		UAry:  nil,
+		//Error: errors.New("Error ............"),
+	}, nil
+}
+
 func (a *ApiTest) Test2Info() rj.FuncInfo {
 	//val, err := a.Rsp.Get((&ApiTest{}).Test1)
 	//if err != nil {
@@ -179,6 +189,10 @@ func main() {
 	reqs = append(reqs, &rj.Request{
 		Service: "test.Test1",
 		Args:    req,
+	})
+	reqs = append(reqs, &rj.Request{
+		Service: "test.Test3",
+		Args:    nil,
 	})
 
 	data, _ := json.Marshal(reqs)

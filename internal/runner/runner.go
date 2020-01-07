@@ -2,6 +2,7 @@ package runner
 
 import (
 	"fmt"
+	"github.com/seerx/runjson/internal/types"
 	"reflect"
 	"regexp"
 	"runtime"
@@ -138,9 +139,12 @@ func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, results rj.
 	args := make([]reflect.Value, len(s.inputArgs), len(s.inputArgs))
 	for n, a := range s.inputArgs {
 		argVal := a.CreateValue(argContext)
-		// 判断是否实现 io.Closer 接口
-		if task := asClearTask(argVal); task != nil {
-			clearTasks = append(clearTasks, task)
+		if a.IsInject() {
+			// 注入类型
+			// 判断是否实现 io.Closer 接口
+			if task := asClearTask(argVal); task != nil {
+				clearTasks = append(clearTasks, task)
+			}
 		}
 		args[n] = argVal
 	}
@@ -167,6 +171,14 @@ func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, results rj.
 }
 
 func asClearTask(value reflect.Value) rj.OnComplete {
+	if value == types.NilType {
+		return nil
+	}
+	if value.Kind() == reflect.Ptr || value.Kind() == reflect.Interface {
+		if value.IsNil() {
+			return nil
+		}
+	}
 	val := value.Interface()
 	if val == nil {
 		return nil
