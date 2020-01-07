@@ -1,4 +1,4 @@
-module github.com/seerx/runjson/v0.0.1
+module github.com/seerx/runjson/0.0.1
 
 go 1.13
 
