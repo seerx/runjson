@@ -66,10 +66,10 @@ type Req struct {
 
 func (a *ApiTest) Test1Info() *rj.FuncInfo {
 	return &rj.FuncInfo{
-		Description:    "测试函数1",
-		Deprecated:     false,
-		InputIsRequire: true,
-		History:        nil,
+		Description: "测试函数1",
+		Deprecated:  false,
+		//InputIsRequire: true,
+		History: nil,
 	}
 }
 

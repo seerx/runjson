@@ -71,10 +71,11 @@ func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, 
 		if rof.Require {
 			// 不能为空
 			return reflect.ValueOf(nil), fmt.Errorf("%s.%s is required", parentPath, rof.Name)
-		} else {
-			// ke可以是空
-			return reflect.ValueOf(nil), nil
 		}
+		//else {
+		//	// ke可以是空
+		//	return reflect.ValueOf(nil), nil
+		//}
 
 	}
 	objType := mgr.Find(rof.Type)
@@ -155,7 +156,8 @@ func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, 
 func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data interface{}, mgr *RequestObjectManager, fm *fieldmap.FieldMap) (reflect.Value, error) {
 	if data == nil {
 		// 数据是空的
-		return reflect.ValueOf(nil), nil
+		return reflect.New(ro.Type), nil
+		//return reflect.ValueOf(nil), nil
 	}
 	if ro.Primitive {
 		// 原生类型
