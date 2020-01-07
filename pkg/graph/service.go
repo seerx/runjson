@@ -14,6 +14,7 @@ type ServiceInfo struct {
 	Deprecated     bool   `json:"deprecated"`
 	InputObjectID  string `json:"inputObjectId,omitempty"`
 	InputIsArray   bool   `json:"inputIsArray"`
+	InputIsRequire bool   `json:"inputIsRequire"`
 	OutputObjectID string `json:"outputObjectId,omitempty"`
 	OutputIsArray  bool   `json:"outputIsArray"`
 	History        []*CR  `json:"history,omitempty"`

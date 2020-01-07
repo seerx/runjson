@@ -2,11 +2,12 @@ package runner
 
 import (
 	"fmt"
-	"github.com/seerx/runjson/internal/types"
 	"reflect"
 	"regexp"
 	"runtime"
 	"strings"
+
+	"github.com/seerx/runjson/internal/types"
 
 	"github.com/seerx/runjson/pkg/rj"
 
@@ -107,6 +108,12 @@ type JSONRunner struct {
 	inputArgs            []arguments.Argument // 函数输入参数表
 
 	loaderStruct *arguments.LoaderScheme
+}
+
+func (s *JSONRunner) SetRequestArgRequire(require bool) {
+	if s.requestObject != nil {
+		s.requestObject.Require = require
+	}
 }
 
 func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, results rj.Results) (interface{}, error) {

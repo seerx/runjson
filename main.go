@@ -301,6 +301,8 @@ func (r *Runner) Engage() error {
 					svcInfo.Description = info.Description
 					svcInfo.Deprecated = info.Deprecated
 					svcInfo.History = info.History
+					svcInfo.InputIsRequire = info.InputIsRequire
+					svc.SetRequestArgRequire(svcInfo.InputIsRequire)
 				}
 				grp.AddService(svcInfo)
 				//grp. = append(grp.Funcs, fn)
