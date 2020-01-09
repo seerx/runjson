@@ -72,6 +72,16 @@ func (r *Runner) AfterExecute(fn AfterExecute) *Runner {
 type results struct {
 	response rj.Response
 	run      *Runner
+	count    int
+	index    int
+}
+
+func (r *results) Count() int {
+	return r.count
+}
+
+func (r *results) Index() int {
+	return r.index
 }
 
 func (r *results) Get(method interface{}) ([]*rj.ResponseItem, error) {
@@ -175,14 +185,17 @@ func (r *Runner) doRun(ctx *context.Context, reqs rj.Requests, returnFn func(rj.
 	rslt := &results{
 		response: response,
 		run:      r,
+		count:    len(reqs),
+		index:    0,
 	}
 
-	for _, request := range reqs {
+	for n, request := range reqs {
 		// before
 		if r.beforeExecute != nil {
 			r.beforeExecute(ctx, request)
 		}
 		var result *rj.ResponseItem
+		rslt.index = n
 		r.execute(ctx, request, rslt, func(key string, rsp *rj.ResponseItem) {
 			if resAry, exists := response[request.Service]; exists {
 				response[key] = append(resAry, rsp)
