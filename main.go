@@ -76,11 +76,11 @@ type results struct {
 	index    int
 }
 
-func (r *results) Count() int {
+func (r *results) CallCount() int {
 	return r.count
 }
 
-func (r *results) Index() int {
+func (r *results) CallIndex() int {
 	return r.index
 }
 
