@@ -1,6 +1,7 @@
 <p align="center">
   <img width="320" src="https://github.com/seerx/runjson/blob/master/resources/logo.png">
 </p>
+
 # Run JSON
 Let json object Running
 
@@ -43,3 +44,6 @@ Let json object Running
     </li>
     <li>提供 API 说明信息，包含 API 名称、参数说明、参数数据类型等内容</li>
 </ol>
+
+# 拓展
+该包实现了 RunJSON 必要的核心功能，要用它做开发，请转到 <a href="https://www.github.com/seerx/rjhttp">rjhttp</a>，这是一个以 Run JSON 包为核心的 http 形式的服务接口包，使用它可以非常便捷的开发 API，并可以实时查看 API 文档。
