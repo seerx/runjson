@@ -157,7 +157,6 @@ func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data i
 	if data == nil {
 		// 数据是空的
 		return reflect.New(ro.Type), nil
-		//return reflect.ValueOf(nil), nil
 	}
 	if ro.Primitive {
 		// 原生类型
