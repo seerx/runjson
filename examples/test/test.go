@@ -1,18 +1,17 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"time"
 
+	"github.com/seerx/runjson"
+
 	"github.com/seerx/runjson/examples/test/tt"
 
 	"github.com/seerx/runjson/pkg/graph"
-
-	"github.com/seerx/runjson"
-
-	"github.com/seerx/runjson/pkg/context"
 
 	"github.com/seerx/runjson/pkg/rj"
 )
@@ -152,6 +151,10 @@ func InjectFn1(a map[string]interface{}) (*Cls, error) {
 }
 
 func main() {
+
+	//mp := reflects.Parse("limit:0-$v--10,desc:测试")
+	//data, _ := json.MarshalIndent(mp, "", "  ")
+	//fmt.Println(string(data))
 
 	ch := runjson.New()
 	if err := ch.Inject(InjectFn, InjectFn1); err != nil {
