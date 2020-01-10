@@ -30,7 +30,8 @@ func (v *RegexpValidator) Check(val interface{}) error {
 	}
 
 	if !ok {
-		return typeError("string")
+		return fmt.Errorf("%s's input value is invalid", v.field)
+		//return typeError("string")
 	}
 	found := v.regex.FindString(str)
 	//v.regex.MatchString(str)

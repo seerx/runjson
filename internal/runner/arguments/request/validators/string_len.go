@@ -52,7 +52,7 @@ func CreateStringLimit(fieldName string, exp string, errorMessage string) *Strin
 			val := exp[:n+1]
 			intVal, err := strconv.Atoi(val)
 			if err != nil {
-				panic(fmt.Errorf("%s cann't convert to integer %s", val, err.Error()))
+				panic(fmt.Errorf("%s cann't convert to integer %s in field [%s]", val, err.Error(), fieldName))
 			}
 			v.min = intVal
 			break
@@ -85,7 +85,7 @@ func CreateStringLimit(fieldName string, exp string, errorMessage string) *Strin
 			val := exp[n:]
 			intVal, err := strconv.Atoi(val)
 			if err != nil {
-				panic(fmt.Errorf("%s cann't convert to integer %s", val, err.Error()))
+				panic(fmt.Errorf("%s cann't convert to integer %s in field [%s]", val, err.Error(), fieldName))
 			}
 			v.max = intVal
 			break
