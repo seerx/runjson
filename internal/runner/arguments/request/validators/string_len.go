@@ -8,14 +8,14 @@ import (
 	"strings"
 )
 
-// StringLimit 检测整形范围
+// StringLengthRange 检测整形范围
 // 对应 tag 中的 limit 标签
 // limit=0<$v  大于 0
 // limit=$v<0  小于 0
 // limit=-10<$v<0  大于 -10 小于 0
 // 不允许出现 > 符号
 // 大于小于 < 可以使用 <=  替换
-type StringLimit struct {
+type StringLengthRange struct {
 	field      string
 	limitMax   bool
 	max        int
@@ -30,13 +30,13 @@ type StringLimit struct {
 }
 
 // CreateStringLimit 解析 limit 内容
-func CreateStringLimit(fieldName string, exp string, errorMessage string) *StringLimit {
+func CreateStringLimit(fieldName string, exp string, errorMessage string) *StringLengthRange {
 	vp := strings.Index(exp, "$v")
 	if vp < 0 {
 		// 没有找到 $v
 		return nil
 	}
-	v := &StringLimit{
+	v := &StringLengthRange{
 		field: fieldName,
 	}
 
@@ -102,14 +102,14 @@ func CreateStringLimit(fieldName string, exp string, errorMessage string) *Strin
 	return v
 }
 
-func (v *StringLimit) generateError(n int) error {
+func (v *StringLengthRange) generateError(n int) error {
 	if v.errorMessage != "" {
 		return errors.New(v.errorMessage)
 	}
 	return fmt.Errorf(v.errorFmt, n)
 }
 
-func (v *StringLimit) Check(val interface{}) error {
+func (v *StringLengthRange) Check(val interface{}) error {
 	var str string
 	var ok bool
 	if reflect.TypeOf(val).Kind() == reflect.Ptr {

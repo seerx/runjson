@@ -8,14 +8,14 @@ import (
 	"strings"
 )
 
-// IntegerLimit 检测整形范围
+// IntegerRange 检测整形范围
 // 对应 tag 中的 limit 标签
 // limit=0<$v  大于 0
 // limit=$v<0  小于 0
 // limit=-10<$v<0  大于 -10 小于 0
 // 不允许出现 > 符号
 // 大于小于 < 可以使用 <=  替换
-type IntegerLimit struct {
+type IntegerRange struct {
 	field      string
 	limitMax   bool
 	max        int
@@ -30,13 +30,13 @@ type IntegerLimit struct {
 }
 
 // CreateIntegerLimit 解析 limit 内容
-func CreateIntegerLimit(fieldName string, exp string, errorMessage string) *IntegerLimit {
+func CreateIntegerLimit(fieldName string, exp string, errorMessage string) *IntegerRange {
 	vp := strings.Index(exp, "$v")
 	if vp < 0 {
 		// 没有找到 $v
 		return nil
 	}
-	v := &IntegerLimit{
+	v := &IntegerRange{
 		field: fieldName,
 	}
 
@@ -102,14 +102,14 @@ func CreateIntegerLimit(fieldName string, exp string, errorMessage string) *Inte
 	return v
 }
 
-func (v *IntegerLimit) generateError(n int) error {
+func (v *IntegerRange) generateError(n int) error {
 	if v.errorMessage != "" {
 		return errors.New(v.errorMessage)
 	}
 	return fmt.Errorf(v.errorFmt, n)
 }
 
-func (v *IntegerLimit) Check(val interface{}) error {
+func (v *IntegerRange) Check(val interface{}) error {
 	var n int
 	var ok bool
 	if reflect.TypeOf(val).Kind() == reflect.Ptr {

@@ -9,7 +9,7 @@ const (
 	TAG     = "rj"
 	tagDesc = "desc"
 	//tagPrefix       = "prefix"
-	tagLimit        = "limit"
+	tagRange        = "range"
 	tagRegexp       = "regexp"
 	tagErrorMessage = "error"
 	tagRequire      = "require"
@@ -31,7 +31,7 @@ type ChainTag struct {
 
 func isValidateToken(token string) bool {
 	return tagDesc == token ||
-		tagLimit == token ||
+		tagRange == token ||
 		tagRegexp == token ||
 		tagErrorMessage == token ||
 		tagRequire == token ||
@@ -183,7 +183,7 @@ func ParseTag(field *reflect.StructField) *ChainTag {
 		//gTag.Prefix = mp[tagPrefix] //  parseGqlPrefix(mp)
 		gTag.Description = mp[tagDesc]
 		gTag.Regexp = mp[tagRegexp]
-		gTag.Limit = mp[tagLimit]
+		gTag.Limit = mp[tagRange]
 		gTag.Error = mp[tagErrorMessage]
 		_, gTag.Require = mp[tagRequire]
 		_, gTag.Deprecated = mp[tagDeprecated]

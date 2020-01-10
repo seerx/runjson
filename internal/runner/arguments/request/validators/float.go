@@ -8,14 +8,14 @@ import (
 	"strings"
 )
 
-// FloatLimit 检测整形范围
+// FloatRange 检测整形范围
 // 对应 tag 中的 limit 标签
 // limit=0<$v  大于 0
 // limit=$v<0  小于 0
 // limit=-10<$v<0  大于 -10 小于 0
 // 不允许出现 > 符号
 // 大于小于 < 可以使用 <=  替换
-type FloatLimit struct {
+type FloatRange struct {
 	field      string
 	limitMax   bool
 	max        float64
@@ -30,13 +30,13 @@ type FloatLimit struct {
 }
 
 // CreateFloatLimit 解析 limit 内容
-func CreateFloatLimit(fieldName string, exp string, errorMessage string) *FloatLimit {
+func CreateFloatLimit(fieldName string, exp string, errorMessage string) *FloatRange {
 	vp := strings.Index(exp, "$v")
 	if vp < 0 {
 		// 没有找到 $v
 		return nil
 	}
-	v := &FloatLimit{
+	v := &FloatRange{
 		field: fieldName,
 	}
 
@@ -102,14 +102,14 @@ func CreateFloatLimit(fieldName string, exp string, errorMessage string) *FloatL
 	return v
 }
 
-func (v *FloatLimit) generateError(n float64) error {
+func (v *FloatRange) generateError(n float64) error {
 	if v.errorMessage != "" {
 		return errors.New(v.errorMessage)
 	}
 	return fmt.Errorf(v.errorFmt, n)
 }
 
-func (v *FloatLimit) Check(val interface{}) error {
+func (v *FloatRange) Check(val interface{}) error {
 	var n float64
 	var ok bool
 	if reflect.TypeOf(val).Kind() == reflect.Ptr {
