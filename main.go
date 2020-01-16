@@ -22,12 +22,28 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type (
-	BeforeRun func(*context.Context, rj.Requests)
-	AfterRun  func(*context.Context, rj.Requests, rj.Results)
+// Error RunJson 错误信息
+type Error struct {
+	Err     error
+	ctx     *context.Context
+	request rj.Requests
+}
 
-	BeforeExecute func(ctx *context.Context, item *rj.Request)
-	AfterExecute  func(ctx *context.Context, item *rj.Request, result *rj.ResponseItem, results rj.Results)
+func (e *Error) Error() string {
+	if e.Err != nil {
+		return e.Err.Error()
+	}
+	return ""
+}
+
+type (
+	BeforeRun func(*context.Context, rj.Requests) error
+	AfterRun  func(*context.Context, rj.Requests, rj.Results) error
+
+	BeforeExecute func(ctx *context.Context, item *rj.Request) error
+	AfterExecute  func(ctx *context.Context, item *rj.Request, result *rj.ResponseItem, results rj.Results) error
+
+	OnError func(err *Error)
 )
 
 // Runner 结构体
@@ -50,6 +66,13 @@ type Runner struct {
 	beforeExecute BeforeExecute
 	afterRun      AfterRun
 	afterExecute  AfterExecute
+	onError       OnError
+}
+
+// ErrorHandler 错误处理函数
+func (r *Runner) ErrorHandler(handler OnError) *Runner {
+	r.onError = handler
+	return r
 }
 
 func (r *Runner) BeforeRun(fn BeforeRun) *Runner {
@@ -178,7 +201,10 @@ func (r *Runner) doRun(ctx *context.Context, reqs rj.Requests, returnFn func(rj.
 	//r.log.Debug("Requests: \n%s", data)
 
 	if r.beforeRun != nil {
-		r.beforeRun(ctx, reqs)
+		if err := r.beforeRun(ctx, reqs); err != nil {
+			returnFn(nil, err)
+			return
+		}
 	}
 
 	response := rj.Response{}
@@ -192,7 +218,10 @@ func (r *Runner) doRun(ctx *context.Context, reqs rj.Requests, returnFn func(rj.
 	for n, request := range reqs {
 		// before
 		if r.beforeExecute != nil {
-			r.beforeExecute(ctx, request)
+			if err := r.beforeExecute(ctx, request); err != nil {
+				returnFn(response, err)
+				return
+			}
 		}
 		var result *rj.ResponseItem
 		rslt.index = n
@@ -206,14 +235,20 @@ func (r *Runner) doRun(ctx *context.Context, reqs rj.Requests, returnFn func(rj.
 		})
 		// after
 		if r.afterExecute != nil {
-			r.afterExecute(ctx, request, result, rslt)
+			if err := r.afterExecute(ctx, request, result, rslt); err != nil {
+				returnFn(response, err)
+				return
+			}
 		}
 
 		//r.log.Debug("Call: %s", request.Service)
 	}
 
 	if r.afterRun != nil {
-		r.afterRun(ctx, reqs, rslt)
+		if err := r.afterRun(ctx, reqs, rslt); err != nil {
+			returnFn(response, err)
+			return
+		}
 	}
 
 	returnFn(response, nil)
@@ -227,11 +262,25 @@ func (r *Runner) RunString(ctx *context.Context, data string) (rj.Response, erro
 	err = json.Unmarshal([]byte(data), &reqs)
 	if err != nil {
 		r.log.WithError(err).Error("json.Unmarshal")
+		if r.onError != nil {
+			r.onError(&Error{
+				Err:     err,
+				ctx:     ctx,
+				request: reqs,
+			})
+		}
 		return nil, err
 	}
 	r.doRun(ctx, reqs, func(responses rj.Response, e error) {
 		rsp = responses
 		err = e
+		if r.onError != nil {
+			r.onError(&Error{
+				Err:     err,
+				ctx:     ctx,
+				request: reqs,
+			})
+		}
 	})
 	return rsp, err
 }
@@ -243,6 +292,13 @@ func (r *Runner) RunRequests(ctx *context.Context, reqs rj.Requests) (rj.Respons
 	r.doRun(ctx, reqs, func(responses rj.Response, e error) {
 		rsp = responses
 		err = e
+		if r.onError != nil {
+			r.onError(&Error{
+				Err:     err,
+				ctx:     ctx,
+				request: reqs,
+			})
+		}
 	})
 	return rsp, err
 }
