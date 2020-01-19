@@ -145,7 +145,10 @@ func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, results rj.
 
 	args := make([]reflect.Value, len(s.inputArgs), len(s.inputArgs))
 	for n, a := range s.inputArgs {
-		argVal := a.CreateValue(argContext)
+		argVal, err := a.CreateValue(argContext)
+		if err != nil {
+			return nil, err
+		}
 		if a.IsInject() {
 			// 注入类型
 			// 判断是否实现 io.Closer 接口

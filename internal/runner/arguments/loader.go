@@ -31,7 +31,7 @@ func (ls *LoaderScheme) IsInject() bool {
 	return false
 }
 
-func (ls *LoaderScheme) CreateValue(ctx *ArgumentContext) reflect.Value {
+func (ls *LoaderScheme) CreateValue(ctx *ArgumentContext) (reflect.Value, error) {
 	inst := reflect.New(ls.Type)
 	elem := inst.Elem()
 	for _, fd := range ls.RequireFields {
@@ -64,7 +64,7 @@ func (ls *LoaderScheme) CreateValue(ctx *ArgumentContext) reflect.Value {
 		}
 	}
 
-	return inst
+	return inst, nil
 }
 
 //func (ls *LoaderScheme) IsInjectInterface() bool {

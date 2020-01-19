@@ -12,8 +12,8 @@ func (a *ArgRequire) IsInject() bool {
 	return false
 }
 
-func (a *ArgRequire) CreateValue(ctx *ArgumentContext) reflect.Value {
-	return reflect.ValueOf(ctx.Requirement)
+func (a *ArgRequire) CreateValue(ctx *ArgumentContext) (reflect.Value, error) {
+	return reflect.ValueOf(ctx.Requirement), nil
 }
 
 //func (a *ArgRequire) IsInjectInterface() bool {

@@ -11,9 +11,9 @@ func (a *ArgResults) IsInject() bool {
 	return false
 }
 
-func (a *ArgResults) CreateValue(ctx *ArgumentContext) reflect.Value {
+func (a *ArgResults) CreateValue(ctx *ArgumentContext) (reflect.Value, error) {
 	//if a.ValueIsPtr {
-	return reflect.ValueOf(ctx.Results)
+	return reflect.ValueOf(ctx.Results), nil
 	//}
 	//return reflect.ValueOf(ctx.Results).Elem()
 }
