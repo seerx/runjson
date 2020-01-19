@@ -162,7 +162,7 @@ func (r *Runner) execute(ctx *context.Context, request *rj.Request, rslt *result
 	defer func() {
 		if err := recover(); err != nil {
 			onResponse(request.Service, &rj.ResponseItem{
-				Error: err.(string),
+				Error: fmt.Sprintf("%v", err),
 				Data:  nil,
 			})
 		}
@@ -185,7 +185,7 @@ func (r *Runner) execute(ctx *context.Context, request *rj.Request, rslt *result
 		}
 	} else {
 		rsp = &rj.ResponseItem{
-			Error: "No runner named " + request.Service,
+			Error: "No service named " + request.Service,
 		}
 	}
 
