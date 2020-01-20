@@ -60,6 +60,8 @@ type ReqID struct {
 type Req struct {
 	A    string   `json:"a,omitempty" rj:"desc:测试A,require,limit:10<$v"`
 	B    *string  `json:"b" rj:"desc:测试B ptr"`
+	N    int      `json:"n" rj:"range:(0, 10022!00"`
+	BA   float32  `json:"ba" rj:"range:[10.10,1200]"`
 	Req  ReqID    `json:"req" rj:"desc:测试结构"`
 	Reqs []*ReqID `json:"reqs" rj:"desc:啊哈"`
 }
@@ -185,24 +187,25 @@ func main() {
 	req := &Req{
 		A:   "1230099387747474y44 d",
 		B:   &B,
+		N:   9,
 		Req: ReqID{ID: 100},
 		//Reqs: []*ReqID{{ID: 11}, {ID: 12}},
 		Reqs: nil,
 	}
 
 	reqs := rj.Requests{}
-	reqs = append(reqs, &rj.Request{
-		Service: "test.Test2",
-		Args:    B,
-	})
+	//reqs = append(reqs, &rj.Request{
+	//	Service: "test.Test2",
+	//	Args:    B,
+	//})
 	reqs = append(reqs, &rj.Request{
 		Service: "test.Test1",
-		Args:    nil,
-	})
-	reqs = append(reqs, &rj.Request{
-		Service: "test.Test3",
 		Args:    req,
 	})
+	//reqs = append(reqs, &rj.Request{
+	//	Service: "test.Test3",
+	//	Args:    req,
+	//})
 
 	data, _ := json.Marshal(reqs)
 	str := string(data)

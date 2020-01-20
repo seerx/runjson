@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-	"strings"
 )
 
 // StringLengthRange 检测整形范围
@@ -30,72 +29,42 @@ type StringLengthRange struct {
 }
 
 // CreateStringLimit 解析 limit 内容
-func CreateStringLimit(fieldName string, exp string, errorMessage string) *StringLengthRange {
-	vp := strings.Index(exp, "$v")
-	if vp < 0 {
-		// 没有找到 $v
+func CreateStringLimit(fieldName string, exp string, errorMessage string, warnFn func(err error)) *StringLengthRange {
+	rg, err := parseRange(exp)
+	if err != nil {
+		warnFn(err)
 		return nil
 	}
+
 	v := &StringLengthRange{
 		field: fieldName,
 	}
 
-	// 计算 vp 前面有字符
-	for n := vp - 1; n >= 0; n-- {
-		ch := exp[n : n+1]
-		if ignoreCh(ch) {
-			// 忽略空格
-			continue
-		}
-		if v.limitMin {
-			// 解析数字
-			val := exp[:n+1]
-			intVal, err := strconv.Atoi(val)
-			if err != nil {
-				panic(fmt.Errorf("%s cann't convert to integer %s in field [%s]", val, err.Error(), fieldName))
-			}
-			v.min = intVal
-			break
-		}
-		if ch == "=" {
-			// 出现等号
-			v.includeMin = true
-			continue
-		}
-		if ch == "<" {
-			// 前面出现小于
+	if rg.Min != "" {
+		//intval, err := strconv.ParseInt(rg.Min, 0, 64)
+		intval, err := strconv.Atoi(rg.Min)
+		if err != nil { // 发生错误
+			//warnFn(err)
+			warnFn(fmt.Errorf("Invalid range expression: [%s]: %w", exp, err))
+		} else {
 			v.limitMin = true
+			v.min = intval
+			v.includeMin = rg.IncludeMin
 		}
 	}
-
-	for n := vp + 2; n < len(exp); n++ {
-		ch := exp[n : n+1]
-		if ignoreCh(ch) {
-			// 忽略空格
-			continue
-		}
-		if ch == "=" {
-			// 出现等号
-			v.includeMax = true
-			continue
-		}
-
-		if v.limitMax {
-			// 解析数字
-			val := exp[n:]
-			intVal, err := strconv.Atoi(val)
-			if err != nil {
-				panic(fmt.Errorf("%s cann't convert to integer %s in field [%s]", val, err.Error(), fieldName))
-			}
-			v.max = intVal
-			break
-		}
-
-		if ch == "<" {
-			// 前面出现小于
+	if rg.Max != "" {
+		//intval, err := strconv.ParseInt(rg.Max, 0, 64)
+		intval, err := strconv.Atoi(rg.Max)
+		if err != nil { // 发生错误
+			//warnFn(err)
+			warnFn(fmt.Errorf("Invalid range expression: [%s]: %w", exp, err))
+		} else {
 			v.limitMax = true
+			v.max = intval
+			v.includeMax = rg.IncludeMax
 		}
 	}
+
 	v.errorFmt = getFmt(v.field, "length", v.limitMax, fmt.Sprintf("%d", v.max), v.includeMax,
 		v.limitMin, fmt.Sprintf("%d", v.min), v.includeMin, "%d")
 	v.errorMessage = errorMessage
@@ -122,7 +91,7 @@ func (v *StringLengthRange) Check(val interface{}) error {
 		str, ok = val.(string)
 	}
 	if !ok {
-		return typeError("string")
+		return typeError(v.field, "string")
 	}
 	n := len(str)
 	if v.limitMax {

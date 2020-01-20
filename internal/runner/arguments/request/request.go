@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	validators2 "github.com/seerx/runjson/internal/runner/arguments/request/validators"
+	"github.com/seerx/runjson/internal/runner/arguments/request/validators"
 
 	"github.com/seerx/runjson/internal/runner/arguments/fieldmap"
 
@@ -15,18 +15,18 @@ type RequestObjectField struct {
 	Name         string // json tag 或者 fieldName，用于从  map 中获取值
 	FieldName    string // 结构字段名称
 	Type         reflect.Type
-	Ptr          bool                    // 定义的类型是否是指针
-	Slice        bool                    // 定义的类型是都是切片
-	SliceType    reflect.Type            // 切片类型定义
-	SliceItemPtr bool                    // Slice 项的类型是否是指针
-	Require      bool                    // 必填参数
-	Validators   []validators2.Validator // 数据验证
+	Ptr          bool                   // 定义的类型是否是指针
+	Slice        bool                   // 定义的类型是都是切片
+	SliceType    reflect.Type           // 切片类型定义
+	SliceItemPtr bool                   // Slice 项的类型是否是指针
+	Require      bool                   // 必填参数
+	Validators   []validators.Validator // 数据验证
 }
 
-func GenerateRequestObjectField(tag *reflects.ChainTag, fieldName string, info *reflects.TypeInfo, require bool) *RequestObjectField {
-	var vlds []validators2.Validator
+func GenerateRequestObjectField(tag *reflects.ChainTag, fieldName string, info *reflects.TypeInfo, require bool, warn func(err error)) *RequestObjectField {
+	var vlds []validators.Validator
 	if tag != nil && info.IsPrimitive {
-		vlds = validators2.GenerateValidators(info.Reference, tag)
+		vlds = validators.GenerateValidators(info.Reference, tag, warn)
 	}
 
 	jsonName := ""

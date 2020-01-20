@@ -15,8 +15,8 @@ func ignoreCh(ch string) bool {
 	return " " == ch
 }
 
-func typeError(expected string) error {
-	return fmt.Errorf("expect type %s", expected)
+func typeError(field, expected string) error {
+	return fmt.Errorf("Field %s expect type %s", field, expected)
 }
 
 func getFmt(field string, desc string,
@@ -41,9 +41,9 @@ func getFmt(field string, desc string,
 	maxCond := ""
 	if limitMax {
 		if includeMax {
-			maxCond = "little then or equal " + max
+			maxCond = "less then or equal " + max
 		} else {
-			maxCond = "little then " + max
+			maxCond = "less then " + max
 		}
 	}
 

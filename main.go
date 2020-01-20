@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/seerx/runjson/internal/util"
+
 	"github.com/seerx/runjson/internal/runner"
 
 	"github.com/seerx/runjson/pkg/graph"
@@ -18,8 +20,6 @@ import (
 	"github.com/seerx/runjson/internal/runner/inject"
 
 	"github.com/seerx/runjson/pkg/rj"
-
-	"github.com/sirupsen/logrus"
 )
 
 // Error RunJson 错误信息
@@ -53,7 +53,7 @@ type Runner struct {
 	// 用于执行服务
 	service *runner.Runners
 	// 日志
-	log logrus.Logger
+	log context.Log
 	// 注册的信息
 	loaders []rj.Loader
 	// 注入管理
@@ -120,17 +120,17 @@ func (r *results) Get(method interface{}) ([]*rj.ResponseItem, error) {
 }
 
 func New() *Runner {
-	log := logrus.Logger{
-		Level:     logrus.WarnLevel,
-		Formatter: &logrus.TextFormatter{},
-	}
+	//log := logrus.Logger{
+	//	Level:     logrus.WarnLevel,
+	//	Formatter: &logrus.TextFormatter{},
+	//}
 	return &Runner{
 		ApiInfo: &graph.ApiInfo{
 			Groups:   nil,
 			Request:  map[string]*graph.ObjectInfo{},
 			Response: map[string]*graph.ObjectInfo{},
 		},
-		log:                  log,
+		log:                  &util.Logger{},
 		loaders:              nil,
 		service:              runner.New(),
 		injector:             inject.NewManager(),
@@ -261,7 +261,7 @@ func (r *Runner) RunString(ctx *context.Context, data string) (rj.Response, erro
 	var reqs = rj.Requests{}
 	err = json.Unmarshal([]byte(data), &reqs)
 	if err != nil {
-		r.log.WithError(err).Error("json.Unmarshal")
+		r.log.Error(err, "json.Unmarshal")
 		if r.onError != nil {
 			r.onError(&Error{
 				Err:     err,
@@ -335,7 +335,7 @@ func (r *Runner) Engage() error {
 			svcName, err := grp.GenerateServiceName(method.Name)
 			if err != nil {
 				// 同名 service 已经存在
-				r.log.WithError(err).Error("JSONRunner exists")
+				r.log.Error(err, "JSONRunner exists")
 				continue
 			}
 			// 解析服务函数
@@ -347,8 +347,7 @@ func (r *Runner) Engage() error {
 				r.log)
 			if err != nil {
 				// 不是合法的服务函数
-				r.log.WithError(err).
-					Debugf("[%s] is not a service function", svcName)
+				//r.log.Warn("[%s] is not a service function: %v\n", svcName, err)
 				continue
 			}
 

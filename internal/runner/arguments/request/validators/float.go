@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
-	"strings"
 )
 
 // FloatRange 检测整形范围
@@ -30,72 +29,106 @@ type FloatRange struct {
 }
 
 // CreateFloatLimit 解析 limit 内容
-func CreateFloatLimit(fieldName string, exp string, errorMessage string) *FloatRange {
-	vp := strings.Index(exp, "$v")
-	if vp < 0 {
-		// 没有找到 $v
+func CreateFloatLimit(fieldName string, exp string, errorMessage string, warnFn func(err error)) *FloatRange {
+	rg, err := parseRange(exp)
+	if err != nil {
+		warnFn(err)
 		return nil
 	}
 	v := &FloatRange{
 		field: fieldName,
 	}
 
-	// 计算 vp 前面有字符
-	for n := vp - 1; n >= 0; n-- {
-		ch := exp[n : n+1]
-		if ignoreCh(ch) {
-			// 忽略空格
-			continue
-		}
-		if v.limitMin {
-			// 解析数字
-			val := exp[:n+1]
-			floatVal, err := strconv.ParseFloat(val, 64)
-			if err != nil {
-				panic(fmt.Errorf("%s' tag %s cann't convert to float %s", v.field, val, err.Error()))
-			}
-			v.min = floatVal
-			break
-		}
-		if ch == "=" {
-			// 出现等号
-			v.includeMin = true
-			continue
-		}
-		if ch == "<" {
-			// 前面出现小于
+	if rg.Min != "" {
+		val, err := strconv.ParseFloat(rg.Min, 64)
+		//intval, err := strconv.Atoi(rg.Min)
+		if err != nil { // 发生错误
+			//warnFn(err)
+			warnFn(fmt.Errorf("Invalid range expression: [%s]: %w", exp, err))
+		} else {
 			v.limitMin = true
+			v.min = val
+			v.includeMin = rg.IncludeMin
 		}
 	}
-
-	for n := vp + 2; n < len(exp); n++ {
-		ch := exp[n : n+1]
-		if ignoreCh(ch) {
-			// 忽略空格
-			continue
-		}
-		if ch == "=" {
-			// 出现等号
-			v.includeMax = true
-			continue
-		}
-
-		if v.limitMax {
-			// 解析数字
-			val := exp[n:]
-			floatVal, err := strconv.ParseFloat(val, 64)
-			if err != nil {
-				panic(fmt.Errorf("%s' tag %s cann't convert to integer %s", v.field, val, err.Error()))
-			}
-			v.max = floatVal
-			break
-		}
-
-		if ch == "<" {
-			// 前面出现小于
+	if rg.Max != "" {
+		val, err := strconv.ParseFloat(rg.Max, 64)
+		//intval, err := strconv.Atoi(rg.Max)
+		if err != nil { // 发生错误
+			//warnFn(err)
+			warnFn(fmt.Errorf("Invalid range expression: [%s]: %w", exp, err))
+		} else {
 			v.limitMax = true
+			v.max = val
+			v.includeMax = rg.IncludeMax
 		}
 	}
+
+	//vp := strings.Index(exp, "$v")
+	//if vp < 0 {
+	//	// 没有找到 $v
+	//	return nil
+	//}
+	//v := &FloatRange{
+	//	field: fieldName,
+	//}
+	//
+	//// 计算 vp 前面有字符
+	//for n := vp - 1; n >= 0; n-- {
+	//	ch := exp[n : n+1]
+	//	if ignoreCh(ch) {
+	//		// 忽略空格
+	//		continue
+	//	}
+	//	if v.limitMin {
+	//		// 解析数字
+	//		val := exp[:n+1]
+	//		floatVal, err := strconv.ParseFloat(val, 64)
+	//		if err != nil {
+	//			panic(fmt.Errorf("%s' tag %s cann't convert to float %s", v.field, val, err.Error()))
+	//		}
+	//		v.min = floatVal
+	//		break
+	//	}
+	//	if ch == "=" {
+	//		// 出现等号
+	//		v.includeMin = true
+	//		continue
+	//	}
+	//	if ch == "<" {
+	//		// 前面出现小于
+	//		v.limitMin = true
+	//	}
+	//}
+	//
+	//for n := vp + 2; n < len(exp); n++ {
+	//	ch := exp[n : n+1]
+	//	if ignoreCh(ch) {
+	//		// 忽略空格
+	//		continue
+	//	}
+	//	if ch == "=" {
+	//		// 出现等号
+	//		v.includeMax = true
+	//		continue
+	//	}
+	//
+	//	if v.limitMax {
+	//		// 解析数字
+	//		val := exp[n:]
+	//		floatVal, err := strconv.ParseFloat(val, 64)
+	//		if err != nil {
+	//			panic(fmt.Errorf("%s' tag %s cann't convert to integer %s", v.field, val, err.Error()))
+	//		}
+	//		v.max = floatVal
+	//		break
+	//	}
+	//
+	//	if ch == "<" {
+	//		// 前面出现小于
+	//		v.limitMax = true
+	//	}
+	//}
 	v.errorFmt = getFmt(v.field, "value", v.limitMax, fmt.Sprintf("%f", v.max), v.includeMax,
 		v.limitMin, fmt.Sprintf("%f", v.min), v.includeMin, "%f")
 	v.errorMessage = errorMessage
@@ -122,7 +155,7 @@ func (v *FloatRange) Check(val interface{}) error {
 		n, ok = val.(float64)
 	}
 	if !ok {
-		return typeError("float64")
+		return typeError(v.field, "float64")
 	}
 	if v.limitMax {
 		// 限制了最大值

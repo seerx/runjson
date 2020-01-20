@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/seerx/runjson/pkg/context"
+
 	"github.com/seerx/runjson/pkg/graph"
 
 	"github.com/seerx/runjson/internal/reflects"
@@ -19,7 +21,8 @@ func Traversal(loc *reflects.Location,
 	typ reflect.Type,
 	referenceMap map[string]int,
 	objMap map[string]*graph.ObjectInfo,
-	requestMgr *request.RequestObjectManager) (*graph.ObjectInfo, *request.RequestObject, error) {
+	requestMgr *request.RequestObjectManager,
+	log context.Log) (*graph.ObjectInfo, *request.RequestObject, error) {
 
 	tp := reflects.ParseType(loc, typ)
 	// 指向类型是结构体
@@ -99,7 +102,7 @@ func Traversal(loc *reflects.Location,
 
 			fdInfo := reflects.ParseField(lo, &fd)
 			// 递归
-			fdObj, _, err := Traversal(lo, fdInfo.Raw, referenceMap, objMap, requestMgr)
+			fdObj, _, err := Traversal(lo, fdInfo.Raw, referenceMap, objMap, requestMgr, log)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -117,7 +120,11 @@ func Traversal(loc *reflects.Location,
 			obj.Children = append(obj.Children, itemObj)
 
 			if requestMgr != nil {
-				reqField := request.GenerateRequestObjectField(fdTag, fd.Name, &fdInfo.TypeInfo, fdTag.Require)
+				reqField := request.GenerateRequestObjectField(fdTag, fd.Name, &fdInfo.TypeInfo, fdTag.Require, func(err error) {
+					if err != nil {
+						log.Warn("%s.%s: %s", lo.String(), fd.Name, err.Error())
+					}
+				})
 				//reqField := &request.RequestObjectField{
 				//	Name:         fdTag.FieldName,
 				//	Type:         fdInfo.Reference,

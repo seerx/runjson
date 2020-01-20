@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"reflect"
 
+	"github.com/seerx/runjson/pkg/context"
+
 	"github.com/seerx/runjson/internal/runner/arguments/loader"
 
 	"github.com/seerx/runjson/internal/runner/arguments"
@@ -15,7 +17,6 @@ import (
 	"github.com/seerx/runjson/internal/reflects"
 	"github.com/seerx/runjson/internal/runner/arguments/request"
 	"github.com/seerx/runjson/internal/types"
-	"github.com/sirupsen/logrus"
 )
 
 // TryParserAsService 尝试解析函数为服务
@@ -24,7 +25,7 @@ func TryParserAsService(loader reflect.Type,
 	requestObjectManager *request.RequestObjectManager,
 	method reflect.Method,
 	info *graph.ApiInfo,
-	log logrus.Logger) (*JSONRunner, error) {
+	log context.Log) (*JSONRunner, error) {
 
 	// 生成服务基础信息
 	svc := &JSONRunner{
@@ -76,7 +77,7 @@ func checkInArguments(svc *JSONRunner,
 	requestObjectManager *request.RequestObjectManager,
 	referenceMap map[string]int,
 	objMap map[string]*graph.ObjectInfo,
-	log logrus.Logger) (*graph.ObjectInfo, *request.RequestObjectField, error) {
+	log context.Log) (*graph.ObjectInfo, *request.RequestObjectField, error) {
 	ic := svc.funcType.NumIn()
 	var inInfo *graph.ObjectInfo
 	var inObj *request.RequestObject
@@ -140,11 +141,13 @@ func checkInArguments(svc *JSONRunner,
 				}
 
 				var err error
-				if inInfo, inObj, err = objtraver.Traversal(svc.location, typeInfo.Raw, referenceMap, objMap, requestObjectManager); err != nil {
+				if inInfo, inObj, err = objtraver.Traversal(svc.location, typeInfo.Raw, referenceMap, objMap, requestObjectManager, log); err != nil {
 					return inInfo, nil, fmt.Errorf("JSONRunner function invalid type: %s -> %s", err, svc.location)
 				}
 
-				inObjField = request.GenerateRequestObjectField(nil, "", typeInfo, false)
+				inObjField = request.GenerateRequestObjectField(nil, "", typeInfo, false, func(err error) {
+					log.Warn("%s: %s", svc.Name, err.Error())
+				})
 
 				svc.inputArgs[n] = &arguments.ArgRequest{
 					Arg:      inObj,
@@ -160,10 +163,14 @@ func checkInArguments(svc *JSONRunner,
 				return nil, nil, fmt.Errorf("A service only has one request argument %s: %s", typeInfo.Name, svc.location)
 			}
 			var err error
-			if inInfo, inObj, err = objtraver.Traversal(svc.location, typeInfo.Raw, referenceMap, objMap, requestObjectManager); err != nil {
+			if inInfo, inObj, err = objtraver.Traversal(svc.location, typeInfo.Raw, referenceMap, objMap, requestObjectManager, log); err != nil {
 				return inInfo, nil, fmt.Errorf("JSONRunner function invalid type: %s -> %s", err, svc.location)
 			}
-			inObjField = request.GenerateRequestObjectField(nil, "", typeInfo, false)
+			inObjField = request.GenerateRequestObjectField(nil, "", typeInfo, false, func(err error) {
+				if err != nil {
+					log.Warn("%s: %s", svc.Name, err.Error())
+				}
+			})
 			svc.inputArgs[n] = &arguments.ArgRequest{
 				Arg:      inObj,
 				ArgField: inObjField,
@@ -178,11 +185,11 @@ func checkInArguments(svc *JSONRunner,
 }
 
 // 检查函数的返回参数
-func checkOutArguments(svc *JSONRunner, referenceMap map[string]int, objMap map[string]*graph.ObjectInfo, log logrus.Logger) (*graph.ObjectInfo, bool, error) {
+func checkOutArguments(svc *JSONRunner, referenceMap map[string]int, objMap map[string]*graph.ObjectInfo, log context.Log) (*graph.ObjectInfo, bool, error) {
 	funcLoc := svc.location.String()
 	oc := svc.funcType.NumOut()
 	if oc != 2 {
-		log.Debug("JSONRunner function Must has return 2 values:", funcLoc)
+		//log.Warn("JSONRunner function Must has return 2 values: %s", funcLoc)
 		return nil, false, fmt.Errorf("JSONRunner function Must has return 2 values: %s", funcLoc)
 	}
 
@@ -192,7 +199,7 @@ func checkOutArguments(svc *JSONRunner, referenceMap map[string]int, objMap map[
 	}
 	//rMap := map[string]int{}
 	o = svc.funcType.Out(0)
-	if outObj, _, err := objtraver.Traversal(svc.location, o, referenceMap, objMap, nil); err != nil {
+	if outObj, _, err := objtraver.Traversal(svc.location, o, referenceMap, objMap, nil, log); err != nil {
 		//objtraver.DecReferenceCount(referenceMap, outObj)
 		return nil, false, fmt.Errorf("JSONRunner function invalid type: %s -> %s", err, funcLoc)
 	} else {

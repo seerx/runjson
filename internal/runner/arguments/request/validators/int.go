@@ -3,9 +3,10 @@ package validators
 import (
 	"errors"
 	"fmt"
-	"reflect"
 	"strconv"
 	"strings"
+
+	"github.com/seerx/runjson/internal/runner/arguments/request/validators/integers"
 )
 
 // IntegerRange 检测整形范围
@@ -18,91 +19,107 @@ import (
 type IntegerRange struct {
 	field      string
 	limitMax   bool
-	max        int
+	max        int64
 	includeMax bool
 
 	limitMin   bool
-	min        int
+	min        int64
 	includeMin bool
+
+	integerMaker func() integers.Integer
 
 	errorFmt     string
 	errorMessage string
 }
 
+func trim(val string) string {
+	val = strings.TrimSpace(val)
+	val = strings.Trim(val, "\t")
+	val = strings.Trim(val, "\t")
+	val = strings.Trim(val, "\n")
+	return val
+}
+
+type rawRange struct {
+	Min        string
+	IncludeMin bool
+	Max        string
+	IncludeMax bool
+}
+
+func parseRange(exp string) (*rawRange, error) {
+	ary := strings.Split(exp, ",")
+	if len(ary) != 2 {
+		return nil, fmt.Errorf("Invalid range expression:[%s]", exp)
+	}
+	rg := &rawRange{}
+	min := trim(ary[0])
+	if len(min) > 0 {
+		rg.IncludeMin = min[:1] == "["
+		if rg.IncludeMin || min[:1] == "(" {
+			rg.Min = trim(min[1:])
+		} else {
+			rg.Min = min
+		}
+	}
+
+	max := trim(ary[1])
+	if len(max) > 0 {
+		rg.IncludeMax = max[len(max)-1:] == "]"
+		if rg.IncludeMax || max[len(max)-1:] == ")" {
+			rg.Max = trim(max[:len(max)-1])
+		} else {
+			rg.Max = max
+		}
+
+	}
+
+	return rg, nil
+}
+
 // CreateIntegerLimit 解析 limit 内容
-func CreateIntegerLimit(fieldName string, exp string, errorMessage string) *IntegerRange {
-	vp := strings.Index(exp, "$v")
-	if vp < 0 {
-		// 没有找到 $v
+// (1,2) [1,2] 1,2
+func CreateIntegerLimit(fieldName, exp string, errorMessage string, mk func() integers.Integer, warnFn func(err error)) *IntegerRange {
+	rg, err := parseRange(exp)
+	if err != nil {
+		warnFn(err)
 		return nil
 	}
 	v := &IntegerRange{
-		field: fieldName,
+		field:        fieldName,
+		integerMaker: mk,
 	}
-
-	// 计算 vp 前面有字符
-	for n := vp - 1; n >= 0; n-- {
-		ch := exp[n : n+1]
-		if ignoreCh(ch) {
-			// 忽略空格
-			continue
-		}
-		if v.limitMin {
-			// 解析数字
-			val := exp[:n+1]
-			intVal, err := strconv.Atoi(val)
-			if err != nil {
-				panic(fmt.Errorf("%s cann't convert to integer %s in field [%s]", val, err.Error(), fieldName))
-			}
-			v.min = intVal
-			break
-		}
-		if ch == "=" {
-			// 出现等号
-			v.includeMin = true
-			continue
-		}
-		if ch == "<" {
-			// 前面出现小于
+	//v.
+	if rg.Min != "" {
+		intval, err := strconv.ParseInt(rg.Min, 0, 64)
+		//intval, err := strconv.Atoi(rg.Min)
+		if err != nil { // 发生错误
+			warnFn(fmt.Errorf("Invalid range expression: [%s]: %w", exp, err))
+		} else {
 			v.limitMin = true
+			v.min = intval
+			v.includeMin = rg.IncludeMin
 		}
 	}
-
-	for n := vp + 2; n < len(exp); n++ {
-		ch := exp[n : n+1]
-		if ignoreCh(ch) {
-			// 忽略空格
-			continue
-		}
-		if ch == "=" {
-			// 出现等号
-			v.includeMax = true
-			continue
-		}
-
-		if v.limitMax {
-			// 解析数字
-			val := exp[n:]
-			intVal, err := strconv.Atoi(val)
-			if err != nil {
-				panic(fmt.Errorf("%s cann't convert to integer %s in field [%s]", val, err.Error(), fieldName))
-			}
-			v.max = intVal
-			break
-		}
-
-		if ch == "<" {
-			// 前面出现小于
+	if rg.Max != "" {
+		intval, err := strconv.ParseInt(rg.Max, 0, 64)
+		//intval, err := strconv.Atoi(rg.Max)
+		if err != nil { // 发生错误
+			warnFn(fmt.Errorf("Invalid range expression: [%s]: %w", exp, err))
+		} else {
 			v.limitMax = true
+			v.max = intval
+			v.includeMax = rg.IncludeMax
 		}
 	}
 	v.errorFmt = getFmt(v.field, "value", v.limitMax, fmt.Sprintf("%d", v.max), v.includeMax,
-		v.limitMin, fmt.Sprintf("%d", v.min), v.includeMin, "%d")
+		v.limitMin, fmt.Sprintf("%d", v.min), v.includeMin, "%v")
 	v.errorMessage = errorMessage
+
 	return v
 }
 
-func (v *IntegerRange) generateError(n int) error {
+func (v *IntegerRange) generateError(n interface{}) error {
 	if v.errorMessage != "" {
 		return errors.New(v.errorMessage)
 	}
@@ -110,43 +127,37 @@ func (v *IntegerRange) generateError(n int) error {
 }
 
 func (v *IntegerRange) Check(val interface{}) error {
-	var n int
-	var ok bool
-	if reflect.TypeOf(val).Kind() == reflect.Ptr {
-		var tmp *int
-		tmp, ok = val.(*int)
-		if ok {
-			n = *tmp
-		}
-	} else {
-		n, ok = val.(int)
+	//var n int
+	//var ok bool
+	//if reflect.TypeOf(val).Kind() == reflect.Ptr {
+	//	var tmp *int
+	//	tmp, ok = val.(*int)
+	//	if ok {
+	//		n = *tmp
+	//	}
+	//} else {
+	//	n, ok = val.(int)
+	//}
+	//
+	//if !ok {
+	//	return typeError(v.field, "int")
+	//}
+
+	it := v.integerMaker()
+	if err := it.PrepareValue(val); err != nil {
+		return typeError(v.field, err.Error())
 	}
 
-	if !ok {
-		return typeError("int")
-	}
 	if v.limitMax {
 		// 限制了最大值
-		if v.includeMax {
-			if n > v.max {
-				return v.generateError(n)
-			}
-		} else {
-			if n >= v.max {
-				return v.generateError(n)
-			}
+		if it.GreatThen(v.max, v.includeMax) {
+			return v.generateError(it.Value())
 		}
 	}
 	if v.limitMin {
 		// 限制了最小值
-		if v.includeMin {
-			if n < v.min {
-				return v.generateError(n)
-			}
-		} else {
-			if n <= v.min {
-				return v.generateError(n)
-			}
+		if it.LessThen(v.min, v.includeMin) {
+			return v.generateError(it.Value())
 		}
 	}
 	return nil
