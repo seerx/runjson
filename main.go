@@ -69,6 +69,12 @@ type Runner struct {
 	onError       OnError
 }
 
+// SetLogger 设置日志输出
+func (r *Runner) SetLogger(log context.Log) *Runner {
+	r.log = log
+	return r
+}
+
 // ErrorHandler 错误处理函数
 func (r *Runner) ErrorHandler(handler OnError) *Runner {
 	r.onError = handler
