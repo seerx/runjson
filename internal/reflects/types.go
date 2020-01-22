@@ -74,12 +74,12 @@ type FieldInfo struct {
 }
 
 // ParseField 解析结构字段类型
-func ParseField(loc *Location, field *reflect.StructField) *FieldInfo {
-	ti := ParseType(loc, field.Type)
+func ParseField(loc *Location, field *reflect.StructField) (*FieldInfo, error) {
+	ti, err := ParseType(loc, field.Type)
 	return &FieldInfo{
 		TypeInfo: *ti,
 		Field:    field,
-	}
+	}, err
 }
 
 var (
@@ -116,27 +116,31 @@ var (
 
 var supports = map[reflect.Kind]int{}
 
-func checkSupport(loc *Location, name string, typ reflect.Type) {
+func checkSupport(loc *Location, name string, typ reflect.Type) error {
 	if _, s := supportsPrimitive[typ.Kind()]; !s {
 		// b不是原生类型
 		if _, s := supportsAdvance[typ.Kind()]; !s {
 			// 不是支持的类型
-			panic(fmt.Errorf("[%s] is not support locate %s", name, loc.String()))
+			return fmt.Errorf("[%s] is not support locate %s", name, loc.String())
+			//panic(fmt.Errorf("[%s] is not support locate %s", name, loc.String()))
 		}
 	}
+	return nil
 }
 
-func checkPtrSupport(loc *Location, name string, typ reflect.Type) {
+func checkPtrSupport(loc *Location, name string, typ reflect.Type) error {
 	if _, s := supportsPrimitive[typ.Kind()]; !s {
 		if typ.Kind() != reflect.Struct {
 			// 不是基础类型且不是结构 panic
-			panic(fmt.Errorf("[%s] is not support locate %s", name, loc.String()))
+			return fmt.Errorf("[%s] is not support locate %s", name, loc.String())
+			//panic(fmt.Errorf("[%s] is not support locate %s", name, loc.String()))
 		}
 	}
+	return nil
 }
 
 // ParseType 解析类型
-func ParseType(loc *Location, typ reflect.Type) *TypeInfo {
+func ParseType(loc *Location, typ reflect.Type) (*TypeInfo, error) {
 	//typName := typ.Name()
 	//checkSupport(loc, typName, typ)
 
@@ -177,7 +181,7 @@ func ParseType(loc *Location, typ reflect.Type) *TypeInfo {
 	info.IsStruct = info.Reference.Kind() == reflect.Struct
 	info.IsPrimitive = info.Package == ""
 
-	checkPtrSupport(loc, info.Name, info.Reference)
+	err := checkPtrSupport(loc, info.Name, info.Reference)
 
-	return info
+	return info, err
 }

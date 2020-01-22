@@ -78,7 +78,10 @@ func ParseFuncLocationInStruct(aFunc interface{}) *Location {
 }
 
 func ParseStructFuncLocation(structType reflect.Type, method reflect.Method) *Location {
-	st := ParseType(&Location{}, structType)
+	st, err := ParseType(&Location{}, structType)
+	if err != nil {
+		return &Location{}
+	}
 	return &Location{
 		Package: st.Package,
 		Func:    method.Name,
@@ -87,7 +90,10 @@ func ParseStructFuncLocation(structType reflect.Type, method reflect.Method) *Lo
 }
 
 func ParseStructLocation(structType reflect.Type) *Location {
-	st := ParseType(&Location{}, structType)
+	st, err := ParseType(&Location{}, structType)
+	if err != nil {
+		return &Location{}
+	}
 	return &Location{
 		Package: st.Package,
 		Func:    "",

@@ -24,7 +24,10 @@ func Traversal(loc *reflects.Location,
 	requestMgr *request.RequestObjectManager,
 	log context.Log) (*graph.ObjectInfo, *request.RequestObject, error) {
 
-	tp := reflects.ParseType(loc, typ)
+	tp, err := reflects.ParseType(loc, typ)
+	if err != nil {
+		return nil, nil, err
+	}
 	// 指向类型是结构体
 	obj, exists := objMap[tp.ID()]
 	if exists {
@@ -100,7 +103,10 @@ func Traversal(loc *reflects.Location,
 				continue
 			}
 
-			fdInfo := reflects.ParseField(lo, &fd)
+			fdInfo, err := reflects.ParseField(lo, &fd)
+			if err != nil {
+				return nil, nil, err
+			}
 			// 递归
 			fdObj, _, err := Traversal(lo, fdInfo.Raw, referenceMap, objMap, requestMgr, log)
 			if err != nil {

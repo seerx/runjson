@@ -111,7 +111,10 @@ func checkInArguments(svc *JSONRunner,
 			continue
 		}
 
-		typeInfo := reflects.ParseType(svc.location, in)
+		typeInfo, err := reflects.ParseType(svc.location, in)
+		if err != nil {
+			return nil, nil, fmt.Errorf("Invalid service function : %s: %w", svc.location, err)
+		}
 		if n == 0 {
 			// 结构体
 			svc.loaderStruct = loader.ParseLoader(in, svc.injectMgr)
