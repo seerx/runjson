@@ -12,7 +12,7 @@ var (
 	requireType     = reflect.TypeOf((*rj.Require)(nil)).Elem()
 	funcInfoType    = reflect.TypeOf((*rj.FuncInfo)(nil)).Elem()
 	injectParamType = reflect.TypeOf((*map[string]interface{})(nil)).Elem()
-	resultsType     = reflect.TypeOf((*rj.Results)(nil)).Elem()
+	resultsType     = reflect.TypeOf((*rj.ResponseContext)(nil)).Elem()
 )
 
 func IsInjectParam(typ reflect.Type) bool {

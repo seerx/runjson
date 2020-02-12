@@ -12,7 +12,7 @@ type ArgumentContext struct {
 	InjectValueMap  map[reflect.Type]reflect.Value
 	RequestArgument *reflect.Value
 	Requirement     rj.Require
-	Results         rj.Results
+	Results         rj.ResponseContext
 }
 
 // 参数接口

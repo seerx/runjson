@@ -116,7 +116,7 @@ func (s *JSONRunner) SetRequestArgRequire(require bool) {
 	}
 }
 
-func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, results rj.Results) (interface{}, error) {
+func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, results rj.ResponseContext) (interface{}, error) {
 	var arg *reflect.Value
 	fm := &fieldmap.FieldMap{}
 	if s.requestObject != nil {

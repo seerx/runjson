@@ -26,7 +26,7 @@ type ApiTest struct {
 	R   rj.Require
 	I1  Cls
 	I2  *Cls
-	Rsp rj.Results
+	Rsp rj.ResponseContext
 }
 
 func (a ApiTest) Group() *rj.Group {
@@ -167,7 +167,7 @@ func main() {
 
 	//ch.BeforeExecute(func(item *rj.Request) {
 	//	fmt.Println("before:", item.Service)
-	//}).AfterExecute(func(item *rj.Request, result *rj.ResponseItem, results rj.Results) {
+	//}).AfterExecute(func(item *rj.Request, result *rj.ResponseItem, results rj.ResponseContext) {
 	//	fmt.Println("after:", item.Service)
 	//})
 

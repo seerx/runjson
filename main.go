@@ -38,10 +38,10 @@ func (e *Error) Error() string {
 
 type (
 	BeforeRun func(*context.Context, rj.Requests) error
-	AfterRun  func(*context.Context, rj.Requests, rj.Results) error
+	AfterRun  func(*context.Context, rj.Requests, rj.ResponseContext) error
 
 	BeforeExecute func(ctx *context.Context, item *rj.Request) error
-	AfterExecute  func(ctx *context.Context, item *rj.Request, result *rj.ResponseItem, results rj.Results) error
+	AfterExecute  func(ctx *context.Context, item *rj.Request, result *rj.ResponseItem, results rj.ResponseContext) error
 
 	OnError func(err *Error)
 )
