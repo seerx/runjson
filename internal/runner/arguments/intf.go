@@ -13,6 +13,7 @@ type ArgumentContext struct {
 	RequestArgument *reflect.Value
 	Requirement     rj.Require
 	Results         rj.ResponseContext
+	ServiceName     string
 }
 
 // 参数接口

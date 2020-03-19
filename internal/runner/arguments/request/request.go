@@ -66,6 +66,17 @@ type RequestObject struct {
 	//Validators []validators.Validator // 数据有效性检查
 }
 
+// func isNil(data interface{}) bool {
+// 	if data != nil {
+// 		switch v := data.(type) {
+// 		case string:
+// 			return v != ""
+// 		}
+// 		return false
+// 	}
+// 	return true
+// }
+
 func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, mgr *RequestObjectManager, fm *fieldmap.FieldMap) (reflect.Value, error) {
 	if data == nil {
 		if rof.Require {

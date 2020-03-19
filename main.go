@@ -37,19 +37,22 @@ func (e *Error) Error() string {
 }
 
 type (
+	// BeforeRun 运行前拦截函数定义
 	BeforeRun func(*context.Context, rj.Requests) error
-	AfterRun  func(*context.Context, rj.Requests, rj.ResponseContext) error
-
+	// AfterRun 运行后拦截函数定义
+	AfterRun func(*context.Context, rj.Requests, rj.ResponseContext) error
+	// BeforeExecute 执行单个 API 前拦截函数定
 	BeforeExecute func(ctx *context.Context, item *rj.Request) error
-	AfterExecute  func(ctx *context.Context, item *rj.Request, result *rj.ResponseItem, results rj.ResponseContext) error
-
+	// AfterExecute 执行单个 API 后拦截函数定
+	AfterExecute func(ctx *context.Context, item *rj.Request, result *rj.ResponseItem, results rj.ResponseContext) error
+	// OnError 错误报告函数定义
 	OnError func(err *Error)
 )
 
 // Runner 结构体
 type Runner struct {
 	// 用于对外接口文档
-	ApiInfo *graph.ApiInfo
+	APIInfo *graph.APIInfo
 	// 用于执行服务
 	service *runner.Runners
 	// 日志
@@ -81,18 +84,25 @@ func (r *Runner) ErrorHandler(handler OnError) *Runner {
 	return r
 }
 
+// BeforeRun 在批量执行前拦截
 func (r *Runner) BeforeRun(fn BeforeRun) *Runner {
 	r.beforeRun = fn
 	return r
 }
+
+// BeforeExecute 在单个任务执行时拦截
 func (r *Runner) BeforeExecute(fn BeforeExecute) *Runner {
 	r.beforeExecute = fn
 	return r
 }
+
+// AfterRun 在批量执行后执行
 func (r *Runner) AfterRun(fn AfterRun) *Runner {
 	r.afterRun = fn
 	return r
 }
+
+// AfterExecute 在单个任务执行后拦截
 func (r *Runner) AfterExecute(fn AfterExecute) *Runner {
 	r.afterExecute = fn
 	return r
@@ -131,7 +141,7 @@ func New() *Runner {
 	//	Formatter: &logrus.TextFormatter{},
 	//}
 	return &Runner{
-		ApiInfo: &graph.ApiInfo{
+		APIInfo: &graph.APIInfo{
 			Groups:   nil,
 			Request:  map[string]*graph.ObjectInfo{},
 			Response: map[string]*graph.ObjectInfo{},
@@ -312,7 +322,7 @@ func (r *Runner) RunRequests(ctx *context.Context, reqs rj.Requests) (rj.Respons
 // Engage 解析功能，以启动功能 from Star Trek
 func (r *Runner) Engage() error {
 	// 用于接口的 API 文档信息
-	amap := r.ApiInfo
+	amap := r.APIInfo
 
 	for _, loader := range r.loaders {
 		grpInfo := loader.Group()
@@ -332,7 +342,7 @@ func (r *Runner) Engage() error {
 		for n := 0; n < nm; n++ {
 			method := loaderTyp.Method(n)
 
-			if rj.GROUP_FUNC == method.Name {
+			if rj.GroupFunc == method.Name {
 				// 跳过 Loader 接口的函数
 				continue
 			}

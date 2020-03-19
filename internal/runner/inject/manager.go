@@ -118,6 +118,10 @@ func (im *InjectorManager) RegisterWithProxy(fn interface{}, injectType reflect.
 		return fmt.Errorf("Injector func must recieve one argument [%s]", loc.String())
 	}
 	inType := typ.In(0)
+	inTypeIsPtr := inType.Kind() == reflect.Ptr
+	if inTypeIsPtr {
+		inType = inType.Elem()
+	}
 	if !types.IsInjectParam(inType) {
 		return fmt.Errorf("Injector func must recieve one argument of map[string]interface{} [%s]", loc.String())
 	}
@@ -127,6 +131,7 @@ func (im *InjectorManager) RegisterWithProxy(fn interface{}, injectType reflect.
 		Type:                  injectType,
 		Func:                  reflect.ValueOf(fn),
 		Location:              loc,
+		ArgIsPtr:              inTypeIsPtr,
 		ReturnTypeIsInterface: injectType.Kind() == reflect.Interface,
 	}
 

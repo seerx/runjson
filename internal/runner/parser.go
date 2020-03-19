@@ -24,7 +24,7 @@ func TryParserAsService(loader reflect.Type,
 	injectManager *inject.InjectorManager,
 	requestObjectManager *request.RequestObjectManager,
 	method reflect.Method,
-	info *graph.ApiInfo,
+	info *graph.APIInfo,
 	log context.Log) (*JSONRunner, error) {
 
 	// 生成服务基础信息

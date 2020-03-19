@@ -15,5 +15,5 @@ type Request struct {
 	Args    interface{} `json:"args"`
 }
 
-// 请求列表
+// Requests 请求列表
 type Requests []*Request

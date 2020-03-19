@@ -1,14 +1,14 @@
 package graph
 
-// ApiInfo 总体结构
-type ApiInfo struct {
+// APIInfo 总体结构
+type APIInfo struct {
 	Groups   []*GroupInfo           `json:"groups"`
 	Response map[string]*ObjectInfo `json:"response"`
 	Request  map[string]*ObjectInfo `json:"request"`
 }
 
 // GetGroup 根据 rj.Group 获取 map 中的组信息
-func (mi *ApiInfo) GetGroup(grpName, grpInfo string) *GroupInfo {
+func (mi *APIInfo) GetGroup(grpName, grpInfo string) *GroupInfo {
 	for _, group := range mi.Groups {
 		if group.Name == grpName {
 			// 组已经存在

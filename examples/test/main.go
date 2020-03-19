@@ -54,14 +54,14 @@ type Response struct {
 }
 
 type ReqID struct {
-	ID int `json:"id" c:"desc="ID 值"`
+	ID int `json:"id" rj:"desc:123"`
 }
 
 type Req struct {
 	A    string   `json:"a,omitempty" rj:"desc:测试A,require,limit:10<$v"`
 	B    *string  `json:"b" rj:"desc:测试B ptr"`
 	N    int      `json:"n" rj:"range:(0, 10022!00"`
-	BA   float32  `json:"ba" rj:"range:[10.10,1200]"`
+	BA   float64  `json:"ba" rj:"range:[10.10,1200]"`
 	Req  ReqID    `json:"req" rj:"desc:测试结构"`
 	Reqs []*ReqID `json:"reqs" rj:"desc:啊哈"`
 }
@@ -145,11 +145,11 @@ func (c *Cls) Close() error {
 	return nil
 }
 
-func InjectFn(a map[string]interface{}) (io.Closer, error) {
+func InjectFn(arg *rj.InjectArg) (io.Closer, error) {
 	return &Cls{V: "test"}, nil
 }
 
-func InjectFn1(a map[string]interface{}) (*Cls, error) {
+func InjectFn1(arg *rj.InjectArg) (*Cls, error) {
 	return &Cls{V: "另一个"}, nil
 }
 
@@ -188,6 +188,7 @@ func main() {
 		A:   "1230099387747474y44 d",
 		B:   &B,
 		N:   9,
+		BA:  100,
 		Req: ReqID{ID: 100},
 		//Reqs: []*ReqID{{ID: 11}, {ID: 12}},
 		Reqs: nil,
@@ -218,4 +219,6 @@ func main() {
 	data, _ = json.Marshal(rsp)
 	str = string(data)
 	fmt.Println(str)
+
+	fmt.Println("DONE ..............")
 }

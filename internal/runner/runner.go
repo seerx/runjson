@@ -129,6 +129,7 @@ func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, results rj.
 
 	// 组织函数参数
 	argContext := &arguments.ArgumentContext{
+		ServiceName:     s.Name,
 		Param:           ctx.Param,
 		RequestArgument: arg,
 		InjectValueMap:  map[reflect.Type]reflect.Value{},

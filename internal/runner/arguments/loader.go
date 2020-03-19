@@ -50,7 +50,7 @@ func (ls *LoaderScheme) CreateValue(ctx *ArgumentContext) (reflect.Value, error)
 		var exists bool
 		if val, exists = ctx.InjectValueMap[fd.Injector.Type]; !exists {
 			var err error
-			val, err = fd.Injector.Call(ctx.Param)
+			val, err = fd.Injector.Call(ctx.ServiceName, ctx.Results, ctx.Param)
 			if err != nil {
 				panic(err)
 			}
