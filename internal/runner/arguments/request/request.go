@@ -77,7 +77,8 @@ type RequestObject struct {
 // 	return true
 // }
 
-func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, mgr *RequestObjectManager, fm *fieldmap.FieldMap) (reflect.Value, error) {
+// NewInstance 创建结构属性对象
+func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, mgr *ObjectManager, fm *fieldmap.FieldMap) (reflect.Value, error) {
 	if data == nil {
 		if rof.Require {
 			// 不能为空
@@ -164,7 +165,8 @@ func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, 
 	//return nil, nil
 }
 
-func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data interface{}, mgr *RequestObjectManager, fm *fieldmap.FieldMap) (reflect.Value, error) {
+// NewInstance 创建对象
+func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data interface{}, mgr *ObjectManager, fm *fieldmap.FieldMap) (reflect.Value, error) {
 	if data == nil {
 		// 数据是空的
 		return reflect.New(ro.Type), nil

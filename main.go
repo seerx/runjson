@@ -62,7 +62,7 @@ type Runner struct {
 	// 注入管理
 	injector *inject.InjectorManager
 	// 请求参数管理
-	requestObjectManager *request.RequestObjectManager
+	requestObjectManager *request.ObjectManager
 	//groups  []*runner.Group
 	//funcs   map[string]*runner.JSONRunner
 	beforeRun     BeforeRun
@@ -115,26 +115,29 @@ type results struct {
 	index    int
 }
 
+// CallCount 调用个数
 func (r *results) CallCount() int {
 	return r.count
 }
 
+// CallIndex 调用次序
 func (r *results) CallIndex() int {
 	return r.index
 }
 
 func (r *results) Get(method interface{}) ([]*rj.ResponseItem, error) {
-	if jr, err := r.run.service.Find(method); err != nil {
+	jr, err := r.run.service.Find(method)
+	if err != nil {
 		return nil, err
-	} else {
-		if rsp, exists := r.response[jr.Name]; !exists {
-			return nil, fmt.Errorf("Result of [%s] not found", jr.Name)
-		} else {
-			return rsp, nil
-		}
 	}
+	rsp, exists := r.response[jr.Name]
+	if !exists {
+		return nil, fmt.Errorf("Result of [%s] not found", jr.Name)
+	}
+	return rsp, nil
 }
 
+// New 新建 Runner
 func New() *Runner {
 	//log := logrus.Logger{
 	//	Level:     logrus.WarnLevel,

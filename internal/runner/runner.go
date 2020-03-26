@@ -97,7 +97,7 @@ type JSONRunner struct {
 
 	injectMgr *inject.InjectorManager
 
-	requestObjectMgr *request.RequestObjectManager
+	requestObjectMgr *request.ObjectManager
 
 	returnType           reflect.Type                // 函数有效返回值 Type
 	ReturnObjectID       string                      // 返回类型 ID

@@ -22,7 +22,7 @@ import (
 // TryParserAsService 尝试解析函数为服务
 func TryParserAsService(loader reflect.Type,
 	injectManager *inject.InjectorManager,
-	requestObjectManager *request.RequestObjectManager,
+	requestObjectManager *request.ObjectManager,
 	method reflect.Method,
 	info *graph.APIInfo,
 	log context.Log) (*JSONRunner, error) {
@@ -74,7 +74,7 @@ func TryParserAsService(loader reflect.Type,
 
 // 检查函数的输入参数
 func checkInArguments(svc *JSONRunner,
-	requestObjectManager *request.RequestObjectManager,
+	requestObjectManager *request.ObjectManager,
 	referenceMap map[string]int,
 	objMap map[string]*graph.ObjectInfo,
 	log context.Log) (*graph.ObjectInfo, *request.RequestObjectField, error) {

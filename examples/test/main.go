@@ -60,7 +60,7 @@ type ReqID struct {
 type Req struct {
 	A    string   `json:"a,omitempty" rj:"desc:测试A,require,limit:10<$v"`
 	B    *string  `json:"b" rj:"desc:测试B ptr"`
-	N    int      `json:"n" rj:"range:(0, 10022!00"`
+	N    uint64   `json:"n" rj:"range:(0, 100)"`
 	BA   float64  `json:"ba" rj:"range:[10.10,1200]"`
 	Req  ReqID    `json:"req" rj:"desc:测试结构"`
 	Reqs []*ReqID `json:"reqs" rj:"desc:啊哈"`

@@ -21,7 +21,7 @@ func Traversal(loc *reflects.Location,
 	typ reflect.Type,
 	referenceMap map[string]int,
 	objMap map[string]*graph.ObjectInfo,
-	requestMgr *request.RequestObjectManager,
+	requestMgr *request.ObjectManager,
 	log context.Log) (*graph.ObjectInfo, *request.RequestObject, error) {
 
 	tp, err := reflects.ParseType(loc, typ)

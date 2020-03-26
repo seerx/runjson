@@ -20,9 +20,11 @@ func tryToConvert(fieldName string, typ reflect.Type, val interface{}) (reflect.
 	//	Float float64
 	//)
 	switch typ.Kind() {
-	case reflect.Int:
-		nilVal = reflect.ValueOf(new(int))
-		Int, ok := val.(int)
+	case reflect.Int,
+		reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		nilVal = reflect.ValueOf(new(int64))
+		Int, ok := val.(int64)
 		if ok {
 			if res := int2Type(typ, Int); !res.IsNil() {
 				return res, nil
@@ -107,11 +109,12 @@ func float2Type(typ reflect.Type, val float64) reflect.Value {
 	return reflect.ValueOf(nil)
 }
 
-func int2Type(typ reflect.Type, val int) reflect.Value {
+func int2Type(typ reflect.Type, val int64) reflect.Value {
 	// 可以转换
 	switch typ.Kind() {
 	case reflect.Int:
-		return reflect.ValueOf(&val)
+		n := int(val)
+		return reflect.ValueOf(&n)
 	case reflect.Int8:
 		n := int8(val)
 		return reflect.ValueOf(&n)
