@@ -48,6 +48,8 @@ func TryParserAsService(loader reflect.Type,
 		objtraver.DecReferenceCount(rMap, info.Response)
 		return nil, err
 	}
+	// 返回数据的类型
+	svc.ReturnType = svc.funcType.Out(0)
 	svc.ReturnObjectID = outInfo.ID
 	svc.ReturnObjectIsArray = array
 

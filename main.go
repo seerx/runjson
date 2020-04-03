@@ -194,12 +194,14 @@ func (r *Runner) execute(ctx *context.Context, request *rj.Request, rslt *result
 
 		if err != nil {
 			rsp = &rj.ResponseItem{
-				Error: err.Error(),
+				Error:    err.Error(),
+				DataType: svc.ReturnType,
 			}
 		} else {
 			rsp = &rj.ResponseItem{
-				Error: "",
-				Data:  res,
+				Error:    "",
+				Data:     res,
+				DataType: svc.ReturnType,
 			}
 		}
 	} else {

@@ -99,7 +99,7 @@ type JSONRunner struct {
 
 	requestObjectMgr *request.ObjectManager
 
-	returnType           reflect.Type                // 函数有效返回值 Type
+	ReturnType           reflect.Type                // 函数有效返回值 Type
 	ReturnObjectID       string                      // 返回类型 ID
 	ReturnObjectIsArray  bool                        // 返回的数据是否数组
 	requestObject        *request.RequestObjectField // 函数接收值的 Type

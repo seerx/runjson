@@ -1,9 +1,12 @@
 package rj
 
+import "reflect"
+
 // ResponseItem 返回项
 type ResponseItem struct {
-	Error string      `json:"error,omitempty"`
-	Data  interface{} `json:"data,omitempty"`
+	Error    string       `json:"error,omitempty"`
+	Data     interface{}  `json:"data,omitempty"`
+	DataType reflect.Type `json:"-"`
 }
 
 // Response 返回值
