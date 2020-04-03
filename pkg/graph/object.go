@@ -7,6 +7,8 @@ type ObjectInfo struct {
 	Name        string        `json:"name"`
 	Type        string        `json:"type"`
 	Require     bool          `json:"require,omitempty"` // TODO 递归引用时，需要处理截断 Require 链
+	Range       string        `json:"range,omitempty"`   // 取值范围
+	Pattern     string        `json:"pattern,omitempty"` // 字符串参数的正则表达式验证
 	Array       bool          `json:"array,omitempty"`   // 是否是数组
 	Description string        `json:"description,omitempty"`
 	Children    []*ObjectInfo `json:"children,omitempty"`

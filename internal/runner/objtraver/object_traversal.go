@@ -121,6 +121,8 @@ func Traversal(loc *reflects.Location,
 				Array:       fdInfo.IsRawSlice,
 				Require:     fdTag.Require,
 				Description: fdTag.Description,
+				Range:       fdTag.Limit,
+				Pattern:     fdTag.Regexp,
 				Deprecated:  fdTag.Deprecated,
 			}
 			obj.Children = append(obj.Children, itemObj)
