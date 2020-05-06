@@ -123,7 +123,7 @@ func checkInArguments(svc *JSONRunner,
 		}
 		if n == 0 {
 			// 结构体
-			svc.loaderStruct = loader.ParseLoader(in, svc.injectMgr)
+			svc.loaderStruct = loader.ParseLoader(in, svc.AccessControllers, svc.injectMgr)
 			svc.inputArgs[n] = svc.loaderStruct
 			continue
 		}

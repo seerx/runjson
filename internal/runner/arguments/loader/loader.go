@@ -15,7 +15,7 @@ import (
 var loaderMap = map[reflect.Type]*arguments.LoaderScheme{}
 
 // ParseLoader 解析 Loader 结构
-func ParseLoader(loaderType reflect.Type, injectorManager *inject.InjectorManager) *arguments.LoaderScheme {
+func ParseLoader(loaderType reflect.Type, accessInjectors []*inject.Injector, injectorManager *inject.InjectorManager) *arguments.LoaderScheme {
 	if ls, e := loaderMap[loaderType]; e {
 		return ls
 	}
@@ -64,6 +64,10 @@ func ParseLoader(loaderType reflect.Type, injectorManager *inject.InjectorManage
 					Injector:   inj,
 					ValueIsPtr: ptr,
 				})
+
+				if inj.AccessController {
+					accessInjectors = append(accessInjectors, inj)
+				}
 			}
 		}
 		//reflects.ParseField()
