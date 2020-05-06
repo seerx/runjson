@@ -23,6 +23,7 @@ func (g *GroupInfo) GenerateServiceName(funcName string) (string, error) {
 	return name, nil
 }
 
+// AddService 添加服务
 func (g *GroupInfo) AddService(svc *ServiceInfo) {
 	g.Services = append(g.Services, svc)
 }

@@ -8,6 +8,7 @@ import (
 	"github.com/seerx/runjson/pkg/rj"
 )
 
+// TryToParseFuncInfo 尝试解析函数描述信息
 func TryToParseFuncInfo(loader interface{}, loaderType reflect.Type, funcName string) *rj.FuncInfo {
 	m, exists := loaderType.MethodByName(funcName + "Info")
 	if !exists {

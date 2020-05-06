@@ -9,11 +9,12 @@ import (
 
 // Injector 注入结构
 type Injector struct {
-	Type                  reflect.Type  // 注入类型，即注入函数返回的类型
-	Func                  reflect.Value // 注入函数实例
-	ArgIsPtr              bool          // 参数是否指针
-	ReturnTypeIsInterface bool
-	Location              *reflects.Location
+	Type                  reflect.Type       // 注入类型，即注入函数返回的类型
+	Func                  reflect.Value      // 注入函数实例
+	ArgIsPtr              bool               // 参数是否指针
+	ReturnTypeIsInterface bool               // 返回的数据类型是接口
+	Location              *reflects.Location // 注入函数的位置信息
+	AccessController      bool               // 兼顾权限控制的注入
 }
 
 // Call 调用注入函数

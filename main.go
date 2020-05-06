@@ -172,12 +172,17 @@ func (r *Runner) Inject(fns ...interface{}) error {
 	return nil
 }
 
-// InjectProxy 注册代理注入
-func (r *Runner) InjectProxy(fn interface{}, injectType reflect.Type, proxyFn interface{}) error {
-	return r.injector.RegisterWithProxy(fn, injectType, proxyFn)
+// InjectAccessController 注册兼顾权限控制的注入函数
+func (r *Runner) InjectAccessController(fn interface{}) error {
+	return r.injector.RegisterAccessController(fn)
 }
 
-func (r *Runner) execute(ctx *context.Context, request *rj.Request, rslt *results, onResponse func(key string, rsp *rj.ResponseItem)) {
+// InjectProxy 注册代理注入
+// func (r *Runner) InjectProxy(fn interface{}, injectType reflect.Type, proxyFn interface{}) error {
+// 	return r.injector.RegisterWithProxy(fn, injectType, proxyFn)
+// }
+
+func (r *Runner) execute(ctx *context.Context, injectMap map[reflect.Type]reflect.Value, request *rj.Request, rslt *results, onResponse func(key string, rsp *rj.ResponseItem)) {
 	defer func() {
 		if err := recover(); err != nil {
 			onResponse(request.Service, &rj.ResponseItem{
@@ -190,8 +195,7 @@ func (r *Runner) execute(ctx *context.Context, request *rj.Request, rslt *result
 	var rsp *rj.ResponseItem
 	svc := r.service.Get(request.Service)
 	if svc != nil {
-		res, err := svc.Run(ctx, request.Args, rslt)
-
+		res, err := svc.Run(ctx, request.Args, injectMap, rslt)
 		if err != nil {
 			rsp = &rj.ResponseItem{
 				Error:    err.Error(),
@@ -211,6 +215,25 @@ func (r *Runner) execute(ctx *context.Context, request *rj.Request, rslt *result
 	}
 
 	onResponse(request.Service, rsp)
+}
+
+func (r *Runner) checkAccess(reqs rj.Requests, ctx *context.Context, responseContext rj.ResponseContext) (map[reflect.Type]reflect.Value, error) {
+	accessInject := map[reflect.Type]reflect.Value{}
+	for _, req := range reqs {
+		svc := r.service.Get(req.Service)
+		if svc == nil {
+			// 找不到服务
+			return nil, fmt.Errorf("No service named %s", req.Service)
+		}
+		for _, ac := range svc.AccessControllers {
+			val, err := ac.Call(req.Service, responseContext, ctx.Param)
+			if err != nil {
+				return nil, err
+			}
+			accessInject[ac.Type] = val
+		}
+	}
+	return accessInject, nil
 }
 
 func (r *Runner) doRun(ctx *context.Context, reqs rj.Requests, returnFn func(rj.Response, error)) {
@@ -236,6 +259,13 @@ func (r *Runner) doRun(ctx *context.Context, reqs rj.Requests, returnFn func(rj.
 		index:    0,
 	}
 
+	// 检查权限
+	injectMap, err := r.checkAccess(reqs, ctx, rslt)
+	if err != nil {
+		returnFn(nil, err)
+		return
+	}
+
 	for n, request := range reqs {
 		// before
 		if r.beforeExecute != nil {
@@ -246,7 +276,7 @@ func (r *Runner) doRun(ctx *context.Context, reqs rj.Requests, returnFn func(rj.
 		}
 		var result *rj.ResponseItem
 		rslt.index = n
-		r.execute(ctx, request, rslt, func(key string, rsp *rj.ResponseItem) {
+		r.execute(ctx, injectMap, request, rslt, func(key string, rsp *rj.ResponseItem) {
 			if resAry, exists := response[request.Service]; exists {
 				response[key] = append(resAry, rsp)
 			} else {

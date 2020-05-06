@@ -31,6 +31,7 @@ type Runners struct {
 	runnerMap map[string]*JSONRunner
 }
 
+// New 创建 Runners
 func New() *Runners {
 	return &Runners{
 		RunnerMap: map[string]*JSONRunner{},
@@ -68,6 +69,7 @@ func (r *Runners) Add(runner *JSONRunner) {
 	r.runnerMap[name] = runner
 }
 
+// Find 根据函数查找 JSONRunner
 func (r *Runners) Find(method interface{}) (*JSONRunner, error) {
 	//name := runtime.FuncForPC(reflect.ValueOf(method).Pointer()).Name()
 	//dotPos := strings.LastIndex(name, ".")
@@ -83,6 +85,7 @@ func (r *Runners) Find(method interface{}) (*JSONRunner, error) {
 	return nil, fmt.Errorf("Runner [%s] is not found", name)
 }
 
+// Get 根据名称获取 JSONRunner
 func (r *Runners) Get(runnerName string) *JSONRunner {
 	return r.RunnerMap[runnerName]
 }
@@ -106,17 +109,20 @@ type JSONRunner struct {
 	RequestObjectID      string
 	RequestObjectIsArray bool
 	inputArgs            []arguments.Argument // 函数输入参数表
+	AccessControllers    []*inject.Injector   // 权限控制注入列表
 
 	loaderStruct *arguments.LoaderScheme
 }
 
+// SetRequestArgRequire 设置必须参数
 func (s *JSONRunner) SetRequestArgRequire(require bool) {
 	if s.requestObject != nil {
 		s.requestObject.Require = require
 	}
 }
 
-func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, results rj.ResponseContext) (interface{}, error) {
+// Run 运行 json
+func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, injectMap map[reflect.Type]reflect.Value, results rj.ResponseContext) (interface{}, error) {
 	var arg *reflect.Value
 	fm := &fieldmap.FieldMap{}
 	if s.requestObject != nil {
@@ -126,13 +132,15 @@ func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, results rj.
 		}
 		arg = &a
 	}
-
+	if injectMap == nil {
+		injectMap = map[reflect.Type]reflect.Value{}
+	}
 	// 组织函数参数
 	argContext := &arguments.ArgumentContext{
 		ServiceName:     s.Name,
 		Param:           ctx.Param,
 		RequestArgument: arg,
-		InjectValueMap:  map[reflect.Type]reflect.Value{},
+		InjectValueMap:  injectMap,
 		Requirement:     fm,
 		Results:         results,
 	}

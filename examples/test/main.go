@@ -17,6 +17,12 @@ import (
 	"github.com/seerx/runjson/pkg/rj"
 )
 
+// GA 分组
+var GA = rj.Group{
+	Name:        "test",
+	Description: "测试组",
+}
+
 type ApiTest struct {
 	AN string    `json:"an"`
 	V  int       `json:"v"`
@@ -160,7 +166,10 @@ func main() {
 	//fmt.Println(string(data))
 
 	ch := runjson.New()
-	if err := ch.Inject(InjectFn, InjectFn1); err != nil {
+	if err := ch.Inject(InjectFn); err != nil {
+		panic(err)
+	}
+	if err := ch.InjectAccessController(InjectFn1); err != nil {
 		panic(err)
 	}
 	ch.Register(&ApiTest{}, &tt.TT{})

@@ -110,6 +110,10 @@ func checkInArguments(svc *JSONRunner,
 				IsInterface: true,
 				ValueIsPtr:  true, // 接口类型，认为是指针类型
 			}
+			if injector.AccessController {
+				// 权限控制相关的注入内容
+				svc.AccessControllers = append(svc.AccessControllers, injector)
+			}
 			continue
 		}
 
@@ -137,6 +141,10 @@ func checkInArguments(svc *JSONRunner,
 					Injector:    injector,
 					IsInterface: false,
 					ValueIsPtr:  typeInfo.IsRawPtr,
+				}
+				if injector.AccessController {
+					// 权限控制相关的注入内容
+					svc.AccessControllers = append(svc.AccessControllers, injector)
 				}
 			} else {
 				// 不是注入类型，那就一定是输入参数
@@ -204,11 +212,13 @@ func checkOutArguments(svc *JSONRunner, referenceMap map[string]int, objMap map[
 	}
 	//rMap := map[string]int{}
 	o = svc.funcType.Out(0)
-	if outObj, _, err := objtraver.Traversal(svc.location, o, referenceMap, objMap, nil, log); err != nil {
+	outObj, _, err := objtraver.Traversal(svc.location, o, referenceMap, objMap, nil, log)
+	if err != nil {
 		//objtraver.DecReferenceCount(referenceMap, outObj)
-		return nil, false, fmt.Errorf("JSONRunner function invalid type: %s -> %s", err, funcLoc)
-	} else {
-		//decReferenceCount(referenceMap, info)
-		return outObj, o.Kind() == reflect.Slice, nil
+		return nil, false, fmt.Errorf("JSONRunner function invalid type: %w -> %s", err, funcLoc)
 	}
+	// } else {
+	//decReferenceCount(referenceMap, info)
+	return outObj, o.Kind() == reflect.Slice, nil
+	// }
 }

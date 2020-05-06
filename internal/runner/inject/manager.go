@@ -29,12 +29,18 @@ func (im *InjectorManager) Find(typ reflect.Type) *Injector {
 	return nil
 }
 
+// RegisterAccessController 注册兼顾权限控制的注入函数
+func (im *InjectorManager) RegisterAccessController(fn interface{}) error {
+	return im.RegisterWithProxy(fn, true, nil, nil)
+}
+
+// Register 注册注入函数
 func (im *InjectorManager) Register(fn interface{}) error {
-	return im.RegisterWithProxy(fn, nil, nil)
+	return im.RegisterWithProxy(fn, false, nil, nil)
 }
 
 // RegisterWithProxy 注册注入函数
-func (im *InjectorManager) RegisterWithProxy(fn interface{}, injectType reflect.Type, beenProxyFn interface{}) error {
+func (im *InjectorManager) RegisterWithProxy(fn interface{}, accessController bool, injectType reflect.Type, beenProxyFn interface{}) error {
 	var loc *reflects.Location
 	if beenProxyFn != nil && injectType != nil {
 		loc = reflects.ParseFuncLocation(beenProxyFn)
@@ -133,6 +139,7 @@ func (im *InjectorManager) RegisterWithProxy(fn interface{}, injectType reflect.
 		Location:              loc,
 		ArgIsPtr:              inTypeIsPtr,
 		ReturnTypeIsInterface: injectType.Kind() == reflect.Interface,
+		AccessController:      accessController,
 	}
 
 	return nil
