@@ -121,6 +121,17 @@ func (s *JSONRunner) SetRequestArgRequire(require bool) {
 	}
 }
 
+// cloneInjectMap 复制 injectMap
+func cloneInjectMap(injectMap map[reflect.Type]reflect.Value) map[reflect.Type]reflect.Value {
+	res := map[reflect.Type]reflect.Value{}
+	if injectMap != nil {
+		for k, v := range injectMap {
+			res[k] = v
+		}
+	}
+	return res
+}
+
 // Run 运行 json
 func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, injectMap map[reflect.Type]reflect.Value, results rj.ResponseContext) (interface{}, error) {
 	var arg *reflect.Value
@@ -140,7 +151,7 @@ func (s *JSONRunner) Run(ctx *context.Context, argument interface{}, injectMap m
 		ServiceName:     s.Name,
 		Param:           ctx.Param,
 		RequestArgument: arg,
-		InjectValueMap:  injectMap,
+		InjectValueMap:  cloneInjectMap(injectMap),
 		Requirement:     fm,
 		Results:         results,
 	}
