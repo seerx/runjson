@@ -126,6 +126,7 @@ func (v *IntegerRange) generateError(n interface{}) error {
 	return fmt.Errorf(v.errorFmt, n)
 }
 
+// Check 检查数据
 func (v *IntegerRange) Check(val interface{}) error {
 	//var n int
 	//var ok bool

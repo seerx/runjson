@@ -78,6 +78,7 @@ func (v *StringLengthRange) generateError(n int) error {
 	return fmt.Errorf(v.errorFmt, n)
 }
 
+// Check 检查数据是否合法
 func (v *StringLengthRange) Check(val interface{}) error {
 	var str string
 	var ok bool

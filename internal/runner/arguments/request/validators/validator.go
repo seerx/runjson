@@ -6,7 +6,7 @@ import (
 
 //内置类型检查
 
-// ValueChecker 数据检查
+// Validator 数据检查
 type Validator interface {
 	Check(val interface{}) error
 }

@@ -142,6 +142,7 @@ func (v *FloatRange) generateError(n float64) error {
 	return fmt.Errorf(v.errorFmt, n)
 }
 
+// Check 检查数据
 func (v *FloatRange) Check(val interface{}) error {
 	var n float64
 	var ok bool

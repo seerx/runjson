@@ -7,7 +7,7 @@ import (
 	"regexp"
 )
 
-// RegexValidator 正则表达式验证
+// RegexpValidator 正则表达式验证
 // 对应 tag 中的 regexp
 type RegexpValidator struct {
 	field        string
@@ -16,6 +16,7 @@ type RegexpValidator struct {
 	regex        *regexp.Regexp
 }
 
+// Check 检查数据是否合法
 func (v *RegexpValidator) Check(val interface{}) error {
 	var str string
 	var ok bool
@@ -45,12 +46,13 @@ func (v *RegexpValidator) Check(val interface{}) error {
 	return nil
 }
 
+// CreateRegexpValidator 创建正则检查
 func CreateRegexpValidator(fieldName string, exp string, errMessage string) *RegexpValidator {
-	reg, err := regexp.Compile(exp)
-	if err != nil {
-		panic(fmt.Errorf("Invalid regular expression %s = %s", fieldName, exp))
-		return nil
-	}
+	reg, _ := regexp.Compile(exp)
+	// if err != nil {
+	// 	panic(fmt.Errorf("Invalid regular expression %s = %s", fieldName, exp))
+	// 	return nil
+	// }
 	return &RegexpValidator{
 		regstr:       exp,
 		field:        fieldName,
