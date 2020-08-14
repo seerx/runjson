@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"unicode/utf8"
 )
 
 // StringLengthRange 检测整形范围
@@ -94,7 +95,7 @@ func (v *StringLengthRange) Check(val interface{}) error {
 	if !ok {
 		return typeError(v.field, "string")
 	}
-	n := len(str)
+	n := utf8.RuneCountInString(str)
 	if v.limitMax {
 		// 限制了最大值
 		if v.includeMax {
