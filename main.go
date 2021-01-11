@@ -57,6 +57,8 @@ type Runner struct {
 	service *runner.Runners
 	// 日志
 	log context.Log
+	// logRegister 记录 api 注册过程
+	logRegister bool
 	// 注册的信息
 	loaders []rj.Loader
 	// 注入管理
@@ -75,6 +77,12 @@ type Runner struct {
 // SetLogger 设置日志输出
 func (r *Runner) SetLogger(log context.Log) *Runner {
 	r.log = log
+	return r
+}
+
+// SetLogRegister 设置时候记录注册 api 过程
+func (r *Runner) SetLogRegister(log bool) *Runner {
+	r.logRegister = log
 	return r
 }
 
@@ -389,6 +397,9 @@ func (r *Runner) Engage() error {
 				r.log.Error(err, "JSONRunner exists")
 				continue
 			}
+			if r.logRegister {
+				r.log.Info("Try to register api %s ...", svcName)
+			}
 			// 解析服务函数
 			svc, err := runner.TryParserAsService(loaderTyp,
 				r.injector,
@@ -398,7 +409,11 @@ func (r *Runner) Engage() error {
 				r.log)
 			if err != nil {
 				// 不是合法的服务函数
-				//r.log.Warn("[%s] is not a service function: %v\n", svcName, err)
+				if r.logRegister {
+					r.log.Warn("[%s] is not a service function: %v\n", svcName, err)
+				}
+
+				// r.log.Warn("[%s] is not a service function: %v\n", svcName, err)
 				continue
 			}
 
