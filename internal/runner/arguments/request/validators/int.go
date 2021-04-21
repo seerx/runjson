@@ -50,7 +50,7 @@ type rawRange struct {
 func parseRange(exp string) (*rawRange, error) {
 	ary := strings.Split(exp, ",")
 	if len(ary) != 2 {
-		return nil, fmt.Errorf("Invalid range expression:[%s]", exp)
+		return nil, fmt.Errorf("invalid range expression:[%s]", exp)
 	}
 	rg := &rawRange{}
 	min := trim(ary[0])
@@ -94,7 +94,7 @@ func CreateIntegerLimit(fieldName, exp string, errorMessage string, mk func() in
 		intval, err := strconv.ParseInt(rg.Min, 0, 64)
 		//intval, err := strconv.Atoi(rg.Min)
 		if err != nil { // 发生错误
-			warnFn(fmt.Errorf("Invalid range expression: [%s]: %w", exp, err))
+			warnFn(fmt.Errorf("invalid range expression: [%s]: %w", exp, err))
 		} else {
 			v.limitMin = true
 			v.min = intval
@@ -105,7 +105,7 @@ func CreateIntegerLimit(fieldName, exp string, errorMessage string, mk func() in
 		intval, err := strconv.ParseInt(rg.Max, 0, 64)
 		//intval, err := strconv.Atoi(rg.Max)
 		if err != nil { // 发生错误
-			warnFn(fmt.Errorf("Invalid range expression: [%s]: %w", exp, err))
+			warnFn(fmt.Errorf("invalid range expression: [%s]: %w", exp, err))
 		} else {
 			v.limitMax = true
 			v.max = intval
@@ -143,6 +143,15 @@ func (v *IntegerRange) Check(val interface{}) error {
 	//if !ok {
 	//	return typeError(v.field, "int")
 	//}
+
+	// if v.valueIsString {
+	// 	// string to int
+	// 	n, err := strconv.ParseInt(val.(string), 10, 64)
+	// 	if err != nil {
+	// 		return typeError(v.field, "int")
+	// 	}
+	// 	val = n
+	// }
 
 	it := v.integerMaker()
 	if err := it.PrepareValue(val); err != nil {

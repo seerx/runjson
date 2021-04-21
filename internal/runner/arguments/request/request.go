@@ -12,15 +12,16 @@ import (
 )
 
 type RequestObjectField struct {
-	Name         string // json tag 或者 fieldName，用于从  map 中获取值
-	FieldName    string // 结构字段名称
-	Type         reflect.Type
-	Ptr          bool                   // 定义的类型是否是指针
-	Slice        bool                   // 定义的类型是都是切片
-	SliceType    reflect.Type           // 切片类型定义
-	SliceItemPtr bool                   // Slice 项的类型是否是指针
-	Require      bool                   // 必填参数
-	Validators   []validators.Validator // 数据验证
+	Name          string // json tag 或者 fieldName，用于从  map 中获取值
+	ValueIsString bool   // 存储的数据是 string ，需要转换为 float int  等
+	FieldName     string // 结构字段名称
+	Type          reflect.Type
+	Ptr           bool                   // 定义的类型是否是指针
+	Slice         bool                   // 定义的类型是都是切片
+	SliceType     reflect.Type           // 切片类型定义
+	SliceItemPtr  bool                   // Slice 项的类型是否是指针
+	Require       bool                   // 必填参数
+	Validators    []validators.Validator // 数据验证
 }
 
 func GenerateRequestObjectField(tag *reflects.ChainTag, fieldName string, info *reflects.TypeInfo, require bool, warn func(err error)) *RequestObjectField {
@@ -34,12 +35,13 @@ func GenerateRequestObjectField(tag *reflects.ChainTag, fieldName string, info *
 		jsonName = tag.FieldName
 	}
 	field := &RequestObjectField{
-		Name:      jsonName,
-		FieldName: fieldName,
-		Type:      info.Reference,
-		Ptr:       info.IsRawPtr,
-		Slice:     info.IsRawSlice,
-		SliceType: nil,
+		Name:          jsonName,
+		FieldName:     fieldName,
+		ValueIsString: tag != nil && tag.ValueIsString,
+		Type:          info.Reference,
+		Ptr:           info.IsRawPtr,
+		Slice:         info.IsRawSlice,
+		SliceType:     nil,
 		//SliceType:    info.,
 		SliceItemPtr: info.IsSliceItemIsPtr,
 		Require:      require,
@@ -92,7 +94,7 @@ func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, 
 	}
 	objType := mgr.Find(rof.Type)
 	if objType == nil {
-		return reflect.ValueOf(nil), fmt.Errorf("No RequestObject exists: %s", rof.Name)
+		return reflect.ValueOf(nil), fmt.Errorf("no RequestObject exists: %s", rof.Name)
 	}
 
 	if rof.Slice {
@@ -103,17 +105,17 @@ func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, 
 		}
 		ary, ok := data.([]interface{})
 		if !ok {
-			return reflect.ValueOf(nil), fmt.Errorf("Cann't parse %s as slice", rof.Name)
+			return reflect.ValueOf(nil), fmt.Errorf("cann't parse %s as slice", rof.Name)
 		}
 
 		itemObj := mgr.Find(rof.Type)
 		if itemObj == nil {
-			return reflect.ValueOf(nil), fmt.Errorf("Cann't find %s's request'", rof.Name)
+			return reflect.ValueOf(nil), fmt.Errorf("cann't find %s's request'", rof.Name)
 		}
 		slice := reflect.MakeSlice(rof.SliceType, 0, len(ary))
 		for n, v := range ary {
 			fname := fmt.Sprintf("%s[%d]", rof.Name, n)
-			if item, err := itemObj.NewInstance(parentPath, fname, v, mgr, fm); err != nil {
+			if item, err := itemObj.NewInstance(parentPath, fname, false, v, mgr, fm); err != nil {
 				return reflect.ValueOf(nil), err
 			} else {
 				if rof.SliceItemPtr {
@@ -131,7 +133,8 @@ func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, 
 	}
 	// 非切片类型
 	var reportError error
-	val, err := objType.NewInstance(parentPath, rof.Name, data, mgr, fm)
+	// rof.FieldName
+	val, err := objType.NewInstance(parentPath, rof.Name, rof.ValueIsString, data, mgr, fm)
 	if err != nil {
 		//if rof.Require {
 		reportError = err
@@ -166,7 +169,7 @@ func (rof *RequestObjectField) NewInstance(parentPath string, data interface{}, 
 }
 
 // NewInstance 创建对象
-func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data interface{}, mgr *ObjectManager, fm *fieldmap.FieldMap) (reflect.Value, error) {
+func (ro *RequestObject) NewInstance(parentPath string, fieldName string, valueIsString bool, data interface{}, mgr *ObjectManager, fm *fieldmap.FieldMap) (reflect.Value, error) {
 	if data == nil {
 		// 数据是空的
 		return reflect.New(ro.Type), nil
@@ -174,7 +177,7 @@ func (ro *RequestObject) NewInstance(parentPath string, fieldName string, data i
 	if ro.Primitive {
 		// 原生类型
 		// 对 data 做类型判断及数据转换
-		return tryToConvert(parentPath+"."+fieldName, ro.Type, data)
+		return tryToConvert(parentPath+"."+fieldName, ro.Type, data, valueIsString)
 		//return outData, nil
 	}
 

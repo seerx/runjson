@@ -66,7 +66,7 @@ type ReqID struct {
 type Req struct {
 	A    string   `json:"a,omitempty" rj:"desc:测试A,require,limit:10<$v"`
 	B    *string  `json:"b" rj:"desc:测试B ptr"`
-	N    uint64   `json:"n" rj:"range:(0, 100)"`
+	N    uint64   `json:"n,string" rj:"range:(0, 100)"`
 	BA   float64  `json:"ba" rj:"range:[10.10,1200]"`
 	Req  ReqID    `json:"req" rj:"desc:测试结构"`
 	Reqs []*ReqID `json:"reqs" rj:"desc:啊哈"`
@@ -82,7 +82,7 @@ func (a *ApiTest) Test1Info() *rj.FuncInfo {
 }
 
 func (a ApiTest) Test1(aa Req, cls Cls) ([]*Response, error) {
-	fmt.Println(a.R)
+	fmt.Println("111====", a.R, aa.N)
 	//c.Close()
 	cls.Close()
 	a.I1.Close()
@@ -219,7 +219,7 @@ func main() {
 
 	data, _ := json.Marshal(reqs)
 	str := string(data)
-
+	fmt.Println(str)
 	rsp, err := ch.RunString(&context.Context{}, str)
 	if err != nil {
 		panic(err)

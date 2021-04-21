@@ -3,10 +3,11 @@ package request
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 )
 
 // typ 使用 Refernce
-func tryToConvert(fieldName string, typ reflect.Type, val interface{}) (reflect.Value, error) {
+func tryToConvert(fieldName string, typ reflect.Type, val interface{}, valueIsString bool) (reflect.Value, error) {
 	//vType := reflect.TypeOf(val)
 	//if vType.Kind() == reflect.Ptr {
 	//	vType = vType.Elem()
@@ -23,6 +24,14 @@ func tryToConvert(fieldName string, typ reflect.Type, val interface{}) (reflect.
 	case reflect.Int,
 		reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
 		reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		if valueIsString {
+			// string to int
+			n, err := strconv.ParseInt(val.(string), 10, 64)
+			if err != nil {
+				return nilVal, fmt.Errorf("[%s] invalid data type, expect string", fieldName)
+			}
+			val = n
+		}
 		nilVal = reflect.ValueOf(new(int64))
 		Int, ok := val.(int64)
 		if ok {
@@ -38,6 +47,14 @@ func tryToConvert(fieldName string, typ reflect.Type, val interface{}) (reflect.
 			}
 		}
 	case reflect.Float64, reflect.Float32:
+		if valueIsString {
+			// string to int
+			f, err := strconv.ParseFloat(val.(string), 64)
+			if err != nil {
+				return nilVal, fmt.Errorf("[%s] invalid data type, expect string", fieldName)
+			}
+			val = f
+		}
 		nilVal = reflect.ValueOf(new(float64))
 		Float, ok := val.(float64)
 		//return reflect.ValueOf(val).Convert(typ)

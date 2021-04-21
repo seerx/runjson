@@ -11,12 +11,12 @@ type Validator interface {
 	Check(val interface{}) error
 }
 
-func ignoreCh(ch string) bool {
-	return " " == ch
-}
+// func ignoreCh(ch string) bool {
+// 	return ch == " "
+// }
 
 func typeError(field, expected string) error {
-	return fmt.Errorf("Field %s expect type %s", field, expected)
+	return fmt.Errorf("field %s expect type %s", field, expected)
 }
 
 func getFmt(field string, desc string,

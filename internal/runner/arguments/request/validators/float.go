@@ -44,7 +44,7 @@ func CreateFloatLimit(fieldName string, exp string, errorMessage string, warnFn 
 		//intval, err := strconv.Atoi(rg.Min)
 		if err != nil { // 发生错误
 			//warnFn(err)
-			warnFn(fmt.Errorf("Invalid range expression: [%s]: %w", exp, err))
+			warnFn(fmt.Errorf("invalid range expression: [%s]: %w", exp, err))
 		} else {
 			v.limitMin = true
 			v.min = val
@@ -56,7 +56,7 @@ func CreateFloatLimit(fieldName string, exp string, errorMessage string, warnFn 
 		//intval, err := strconv.Atoi(rg.Max)
 		if err != nil { // 发生错误
 			//warnFn(err)
-			warnFn(fmt.Errorf("Invalid range expression: [%s]: %w", exp, err))
+			warnFn(fmt.Errorf("invalid range expression: [%s]: %w", exp, err))
 		} else {
 			v.limitMax = true
 			v.max = val
@@ -158,6 +158,8 @@ func (v *FloatRange) Check(val interface{}) error {
 	if !ok {
 		return typeError(v.field, "float64")
 	}
+	// }
+
 	if v.limitMax {
 		// 限制了最大值
 		if v.includeMax {

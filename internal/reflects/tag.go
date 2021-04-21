@@ -16,17 +16,20 @@ const (
 	tagDeprecated   = "deprecated"
 	//tagExplodeParams = "explode"
 
+	tagJSONStringType = "string"
+	tagJSONOmitempty  = "omitempty"
 )
 
 // ChainTag
 type ChainTag struct {
-	FieldName   string // 字段名称,使用 json 定义，如果没有则使用 fieldName
-	Require     bool   // 必填字段
-	Description string // 说明
-	Limit       string // 限制
-	Regexp      string // 正则表达式限制
-	Error       string // 设置的错误提示
-	Deprecated  bool   // 建议不要使用
+	FieldName     string // 字段名称,使用 json 定义，如果没有则使用 fieldName
+	ValueIsString bool   // 数据以字符串形式存储
+	Require       bool   // 必填字段
+	Description   string // 说明
+	Limit         string // 限制
+	Regexp        string // 正则表达式限制
+	Error         string // 设置的错误提示
+	Deprecated    bool   // 建议不要使用
 }
 
 func isValidateToken(token string) bool {
@@ -155,7 +158,7 @@ func ParseTag(field *reflect.StructField) *ChainTag {
 	gTag := &ChainTag{}
 	tag := field.Tag
 
-	gTag.FieldName = parseFieldName(&tag, field)
+	gTag.FieldName, gTag.ValueIsString = parseFieldName(&tag, field)
 	if gTag.FieldName == "" {
 		return nil
 	}
@@ -198,25 +201,29 @@ func ParseTag(field *reflect.StructField) *ChainTag {
 //}
 
 // parseFieldName 解析字段名称
-func parseFieldName(tag *reflect.StructTag, field *reflect.StructField) string {
+func parseFieldName(tag *reflect.StructTag, field *reflect.StructField) (string, bool) {
 	name := tag.Get("json")
 	if name == "" {
 		name = field.Name
 	}
 	if name == "-" {
 		// json 中的忽略
-		return ""
+		return "", false
 	}
 	ary := strings.Split(name, ",")
 	if len(ary) == 1 {
-		return name
+		return name, false
 	}
 
+	// 增加 ,string 检查，实现数据类型转换
+	dataTypeIsString := false
 	for _, item := range ary {
-		if item != "omitempty" {
-			return item
+		if item == tagJSONStringType {
+			dataTypeIsString = true
+		} else if item != tagJSONOmitempty {
+			name = item
 		}
 	}
 
-	return ""
+	return name, dataTypeIsString
 }
