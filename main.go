@@ -140,7 +140,7 @@ func (r *results) Get(method interface{}) ([]*rj.ResponseItem, error) {
 	}
 	rsp, exists := r.response[jr.Name]
 	if !exists {
-		return nil, fmt.Errorf("Result of [%s] not found", jr.Name)
+		return nil, fmt.Errorf("result of [%s] not found", jr.Name)
 	}
 	return rsp, nil
 }
@@ -170,8 +170,8 @@ func (r *Runner) Register(loaders ...rj.Loader) {
 	r.loaders = append(r.loaders, loaders...)
 }
 
-// Inject 注册注入函数
-func (r *Runner) Inject(fns ...interface{}) error {
+// RegisterProvider 注册注入函数
+func (r *Runner) RegisterProvider(fns ...interface{}) error {
 	for _, fn := range fns {
 		if err := r.injector.Register(fn); err != nil {
 			return err
@@ -180,8 +180,8 @@ func (r *Runner) Inject(fns ...interface{}) error {
 	return nil
 }
 
-// InjectAccessController 注册兼顾权限控制的注入函数
-func (r *Runner) InjectAccessController(fn interface{}) error {
+// RegisterAccessController 注册兼顾权限控制的注入函数
+func (r *Runner) RegisterAccessController(fn interface{}) error {
 	return r.injector.RegisterAccessController(fn)
 }
 
@@ -231,7 +231,7 @@ func (r *Runner) checkAccess(reqs rj.Requests, ctx *context.Context, responseCon
 		svc := r.service.Get(req.Service)
 		if svc == nil {
 			// 找不到服务
-			return nil, fmt.Errorf("No service named %s", req.Service)
+			return nil, fmt.Errorf("no service named %s", req.Service)
 		}
 		for _, ac := range svc.AccessControllers {
 			val, err := ac.Call(req.Service, responseContext, ctx.Param)
@@ -370,10 +370,10 @@ func (r *Runner) Engage() error {
 	for _, loader := range r.loaders {
 		grpInfo := loader.Group()
 		if grpInfo == nil {
-			return errors.New("A loader must belong a group")
+			return errors.New("a loader must belong a group")
 		}
 		if strings.TrimSpace(grpInfo.Name) == "" {
-			return errors.New("Group's name shuld not be empty")
+			return errors.New("group's name shuld not be empty")
 		}
 		// 获得分组
 		grp := amap.GetGroup(grpInfo.Name, grpInfo.Description)

@@ -166,10 +166,10 @@ func main() {
 	//fmt.Println(string(data))
 
 	ch := runjson.New()
-	if err := ch.Inject(InjectFn); err != nil {
+	if err := ch.RegisterProvider(InjectFn); err != nil {
 		panic(err)
 	}
-	if err := ch.InjectAccessController(InjectFn1); err != nil {
+	if err := ch.RegisterAccessController(InjectFn1); err != nil {
 		panic(err)
 	}
 	ch.Register(&ApiTest{}, &tt.TT{})
